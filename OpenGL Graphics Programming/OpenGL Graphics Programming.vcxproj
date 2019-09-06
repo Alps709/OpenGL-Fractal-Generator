@@ -78,11 +78,11 @@
     <IncludePath>$(ProjectDir)Dependencies\vld;$(ProjectDir)Dependencies\glew;$(ProjectDir)Dependencies\freeglut;$(ProjectDir)Dependencies\soil;$(ProjectDir)Dependencies\glm;$(ProjectDir)Dependencies;$(ProjectDir)Dependencies\fmod;$(ProjectDir)Dependencies\freetype;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LibraryPath>$(ProjectDir)Dependencies/glew;$(ProjectDir)Dependencies/freeglut;$(LibraryPath)</LibraryPath>
-    <IncludePath>$(ProjectDir)Dependencies\glew;$(ProjectDir)Dependencies\freeglut;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)Dependencies\glm;$(ProjectDir)Dependencies/glew;$(ProjectDir)Dependencies/freeglut;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)Dependencies\glm;$(ProjectDir)Dependencies\glew;$(ProjectDir)Dependencies\freeglut;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LibraryPath>$(ProjectDir)Dependencies/glew;$(ProjectDir)Dependencies/freeglut;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(ProjectDir)Dependencies\glm;$(ProjectDir)Dependencies/glew;$(ProjectDir)Dependencies/freeglut;$(LibraryPath)</LibraryPath>
     <IncludePath>$(ProjectDir)Dependencies\glew;$(ProjectDir)Dependencies\freeglut;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -145,37 +145,20 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="clock.cpp" />
-    <ClCompile Include="Entity.cpp" />
-    <ClCompile Include="IndexBuffer.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Mesh.cpp" />
-    <ClCompile Include="Model.cpp" />
-    <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="ShaderLoader.cpp" />
-    <ClCompile Include="TextLabel.cpp" />
-    <ClCompile Include="Texture.cpp" />
-    <ClCompile Include="VertexArray.cpp" />
-    <ClCompile Include="VertexBuffer.cpp" />
     <ClCompile Include="VertexBufferInfo.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Camera.h" />
     <ClInclude Include="clock.h" />
     <ClInclude Include="Debug.h" />
-    <ClInclude Include="Entity.h" />
-    <ClInclude Include="IndexBuffer.h" />
     <ClInclude Include="Mesh.h" />
-    <ClInclude Include="Model.h" />
-    <ClInclude Include="Renderer.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="ShaderLoader.h" />
-    <ClInclude Include="TextLabel.h" />
     <ClInclude Include="Texture.h" />
-    <ClInclude Include="VertexArray.h" />
-    <ClInclude Include="VertexBuffer.h" />
     <ClInclude Include="VertexBufferInfo.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
