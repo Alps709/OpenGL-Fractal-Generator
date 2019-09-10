@@ -253,7 +253,6 @@ int main(int argc, char** argv)
 	//glutMotionFunc(Utils::MouseMove);
 	//glutPassiveMotionFunc(Utils::MousePassiveMove);
 	
-	
 	glutDisplayFunc(display);
 	glutMainLoop();
 	return 0;
@@ -323,7 +322,7 @@ void compute_mandelbrot(double left, double right, double top, double bottom)
 			{
 				
 				//Set pixel colour based on number of iterations
-				glColor3f(EaseInOut(0.0 - 0.5, 0.5, iterations, MAX_ITERATIONS), EaseInOut(0.0 - 0.5, 0.5, iterations, MAX_ITERATIONS), EaseInOut(0.0 - 0.5, 0.5, iterations, MAX_ITERATIONS));
+				glColor3f(1.0, sin(iterations) * 100, cos(iterations) * 100);
 				// z escaped within less than MAX_ITERATIONS
 				// iterations. This point isn't in the set.
 				glVertex2i(x, y);
