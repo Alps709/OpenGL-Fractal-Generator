@@ -58,6 +58,6 @@ bool inline GLCheckError()
 #define GLCall(x) GLClearError();\
     x;\
     ASSERT(GLCheckError())
-#else
+#else //If set to release mode, GLCall does nothing
 #define GLCall(x) x
 #endif
