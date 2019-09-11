@@ -22,7 +22,7 @@ public:
 	static void DestroyInstance();
 
 	template <typename Fun, typename ... Args>
-	std::future<std::result_of_t<Fun(Args...)>> Submit(Fun func, Args... args);
+	std::future<std::invoke_result_t<Fun(Args...)>> Submit(Fun func, Args... args);
 
 	void DoWork();
 	void Start();
@@ -56,14 +56,13 @@ private:
 
 	//An atomic variable to keep track of how many items have been processed.
 	std::atomic_int m_aiItemsProcessed{ 0 };
-
 };
 
 template <typename Fun, typename ... Args>
-std::future<std::result_of_t<Fun(Args...)>>
+std::future<std::invoke_result_t<Fun(Args...)>>
 ThreadPool::Submit(Fun func, Args... args)
 {
-	using ResultT = std::result_of_t<Fun(Args...)>;
+	using ResultT = std::invoke_result_t<Fun(Args...)>;
 	std::unique_ptr<CTask<ResultT>> 
 		task(std::make_unique<CTask<ResultT>>(std::bind(func, args...)));
 	std::future<ResultT> f = task->task.get_future();
