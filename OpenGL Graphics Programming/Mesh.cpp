@@ -2,7 +2,7 @@
 
 
 
-Mesh::Mesh(std::vector<float> _vertices, std::vector<unsigned int> _indices)
+Mesh::Mesh(const std::vector<float>& _vertices, const std::vector<unsigned int>& _indices)
 {
 	//Generate vao
 	GLCall(glGenVertexArrays(1, &m_vaoID));

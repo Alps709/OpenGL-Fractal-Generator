@@ -45,16 +45,6 @@ void Shader::SetUniformMat4f(const std::string& _name, glm::mat4& _matrix) const
 	GLCall(glUniformMatrix4fv(GetUniformLocation(_name), 1, false, &_matrix[0][0]));
 }
 
-void Shader::SetVertShaderName(std::string _name)
-{
-	m_vertShaderName = _name;
-}
-
-void Shader::SetFragShaderName(std::string _name)
-{
-	m_fragShaderName = _name;
-}
-
 int Shader::GetUniformLocation(const std::string& _name) const
 {
 	const int uniformLocation = GLCall(glGetUniformLocation(m_programID, _name.c_str()));

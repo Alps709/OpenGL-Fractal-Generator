@@ -25,8 +25,6 @@ public:
 	int GetUniformLocation(const std::string& _name) const;
 
 private:
-	std::string m_vertShaderName;
-	std::string m_fragShaderName;
 	unsigned int m_programID{};
 };
 

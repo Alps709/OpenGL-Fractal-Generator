@@ -5,7 +5,7 @@ class Mesh
 {
 public:
 	Mesh() = default;
-	Mesh(std::vector<float> _vertices, std::vector<unsigned int> _indices);
+	Mesh(const std::vector<float>& _vertices, const std::vector<unsigned int>& _indices);
 	~Mesh();
 
 	void AddVAOBuffer(const VertexBufferInfo& _info);
