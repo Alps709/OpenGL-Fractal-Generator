@@ -1,197 +1,3 @@
-//#include "Debug.h"
-//#include <freeglut.h>
-//#include <iostream>
-//#include <vector>
-//#include <complex>
-////#include "vld.h"
-//
-//#include "Utils.h"
-//#include "Shader.h"
-//#include "ShaderLoader.h"
-//#include "Mesh.h"
-//
-//glm::mat4 modelMatrix;
-//
-//Mesh* myFractalMesh = nullptr;
-//
-////Second quad
-//Shader* myFractalShader = nullptr;
-//
-////Projection matrix
-//glm::mat4 PV;
-//glm::mat4 PVM;
-//
-////Uniforms
-//GLfloat u_currentTime = 0;
-//int u_frameNum = 0;
-//
-////Animated texture
-//std::vector<float> fractalPoints;
-//
-//void Render();
-//void Update();
-//
-////void ProcessInput();
-//
-//void SetGlobalGLSettings();
-//
-//void compute_mandelbrot(double left, double right, double top, double bottom);
-//
-//int main(int argc, char ** argv)
-//{
-//	//Setup and create at glut controlled window
-//	glutInit(&argc, argv);
-//	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
-//	glutInitWindowPosition(100, 100);
-//	glutInitWindowSize(Utils::SCREEN_WIDTH, Utils::SCREEN_HEIGHT);
-//	glutCreateWindow("Anton's OpenGL Window");
-//
-//	//Print openGL version
-//	std::cout << "Currently using OpenGL version: " << glGetString(GL_VERSION) << std::endl;
-//
-//	//Set up all gl function callbacks based on pc hardware
-//	if (glewInit() != GLEW_OK)
-//	{
-//		//If glew setup failed then application will not run graphics correctly
-//		std::cout << "Glew Initialization Failed. Aborting Application." << std::endl;
-//		system("pause");
-//		return 0;
-//	}
-//
-//	SetGlobalGLSettings();
-//
-//	//Calculate mandlebrot fractal here
-//
-//	//After calculating all the pixel colours add it to a mesh
-//	//myFractalMesh = new Mesh(sizeof(vertices1), vertices1, sizeof(indices1), indices1);
-//
-//	//myFractalShader = new Shader("Shaders/TextureAnimVertexShader.shader",
-//	//                                "Shaders/TextureAnimFragmentShader.shader");
-//
-//	//Update and render function callbacks
-//	glutDisplayFunc(Render);
-//	glutIdleFunc(Update);
-//
-//	
-//
-//	glutMainLoop();
-//
-//	//Delete all the heap allocated objects
-//	//delete myFractalShader;
-//	//delete myFractalMesh;
-//	return 0;
-//}
-//void Update()
-//{
-//	//Update game information
-//	u_currentTime = static_cast<float>(glutGet(GLUT_ELAPSED_TIME)); //Gets current time
-//	u_currentTime = u_currentTime * 0.001f; //Convert milliseconds to seconds
-//	glutPostRedisplay();
-//	//ProcessInput();
-//}
-//
-////void ProcessInput()
-////{
-////	//Keyboard input
-////	//Move the camera forward with the w button
-////	if (
-////		Utils::KeyState['w'] == Utils::INPUT_DOWN || Utils::KeyState['w'] == Utils::INPUT_DOWN_FIRST ||
-////		Utils::KeyState['W'] == Utils::INPUT_DOWN || Utils::KeyState['W'] == Utils::INPUT_DOWN_FIRST
-////		)
-////	{
-////		//move camera forward
-////		myCamera->SetPosition(myCamera->GetPosition() + myCamera->GetLookDirection() * myCamera->GetCamSpeed());
-////
-////		//Print camera position for debugging
-////		//std::cout << "Camera pos: x: " << myCamera->GetPosition().x << " y: " << myCamera->GetPosition().y << " z: " << myCamera->GetPosition().z  << std::endl;
-////
-////		//The key is has now been processed for a frame so next frame if it hasn't been set to up,
-////		//change the enum state
-////		Utils::KeyState['w'] = Utils::INPUT_DOWN;
-////		Utils::KeyState['W'] = Utils::INPUT_DOWN;
-////	}
-////	//Move the camera to the left with the a button
-////	if (
-////		Utils::KeyState['a'] == Utils::INPUT_DOWN || Utils::KeyState['a'] == Utils::INPUT_DOWN_FIRST ||
-////		Utils::KeyState['A'] == Utils::INPUT_DOWN || Utils::KeyState['A'] == Utils::INPUT_DOWN_FIRST
-////		)
-////	{
-////		//move camera left
-////		myCamera->SetPosition(myCamera->GetPosition() - myCamera->GetCamRight() * myCamera->GetCamSpeed());
-////
-////		//The key is has now been processed for a frame so next frame if it hasn't been set to up,
-////		//change the enum state
-////		Utils::KeyState['a'] = Utils::INPUT_DOWN;
-////		Utils::KeyState['A'] = Utils::INPUT_DOWN;
-////	}
-////	//Move the camera backwards with the s button
-////	if (
-////		Utils::KeyState['s'] == Utils::INPUT_DOWN || Utils::KeyState['s'] == Utils::INPUT_DOWN_FIRST ||
-////		Utils::KeyState['S'] == Utils::INPUT_DOWN || Utils::KeyState['S'] == Utils::INPUT_DOWN_FIRST
-////		)
-////	{
-////		//move camera backward
-////		myCamera->SetPosition(myCamera->GetPosition() - myCamera->GetLookDirection() * myCamera->GetCamSpeed());
-////
-////		//The key is has now been processed for a frame so next frame if it hasn't been set to up,
-////		//change the enum state
-////		Utils::KeyState['s'] = Utils::INPUT_DOWN;
-////		Utils::KeyState['S'] = Utils::INPUT_DOWN;
-////	}
-////	//Move the camera to the right witht the d button
-////	if (
-////		Utils::KeyState['d'] == Utils::INPUT_DOWN || Utils::KeyState['d'] == Utils::INPUT_DOWN_FIRST ||
-////		Utils::KeyState['D'] == Utils::INPUT_DOWN || Utils::KeyState['D'] == Utils::INPUT_DOWN_FIRST
-////		)
-////	{
-////		//move camera right
-////		myCamera->SetPosition(myCamera->GetPosition() + myCamera->GetCamRight() * myCamera->GetCamSpeed());
-////
-////		//The key is has now been processed for a frame so next frame if it hasn't been set to up,
-////		//change the enum state
-////		Utils::KeyState['d'] = Utils::INPUT_DOWN;
-////		Utils::KeyState['D'] = Utils::INPUT_DOWN;
-////	}
-////	//Move the camera up with the space button
-////	if (Utils::KeyState[32] == Utils::INPUT_DOWN || Utils::KeyState[32] == Utils::INPUT_DOWN_FIRST)
-////	{
-////		glm::vec3 tempVec = myCamera->GetPosition();
-////		tempVec.y += 2.5f;
-////		myCamera->SetPosition(glm::vec3(tempVec));
-////
-////		//The key is has now been processed for a frame so next frame if it hasn't been set to up,
-////		//change the enum state
-////		Utils::KeyState[32] = Utils::INPUT_DOWN;
-////	}
-////	//Move the camera down with the left shift button
-////	if (Utils::SpecialKeyState[GLUT_KEY_SHIFT_L] == Utils::INPUT_DOWN || Utils::SpecialKeyState[GLUT_KEY_SHIFT_L] == Utils::INPUT_DOWN_FIRST)
-////	{
-////		glm::vec3 tempVec = myCamera->GetPosition();
-////		tempVec.y -= 2.5f;
-////		myCamera->SetPosition(glm::vec3(tempVec));
-////
-////		//The key is has now been processed for a frame so next frame if it hasn't been set to up,
-////		//change the enum state
-////		Utils::SpecialKeyState[GLUT_KEY_SHIFT_L] = Utils::INPUT_DOWN;
-////	}
-////
-////	//Mouse Input
-////	if (Utils::MouseState[0] == Utils::INPUT_DOWN)
-////	{
-////		modelMatrix = CreateModelMatrix(100.0f, 100.0f, 0.0f, 2, 2);
-////	}
-////	if (Utils::MouseState[2] == Utils::INPUT_DOWN)
-////	{
-////		modelMatrix = CreateModelMatrix(-100.0f, -100.0f, 0.0f, 2, 2);
-////	}
-////	if(Utils::g_mousePosDifX != 0 || Utils::g_mousePosDifY != 0)
-////	{
-////		myCamera->ProcessMouseInput(static_cast<float>(Utils::g_mousePosDifX), static_cast<float>(Utils::g_mousePosDifY), true);
-////		Utils::g_mousePosDifX = 0;
-////		Utils::g_mousePosDifY = 0;
-////	}
-////}
-
 #include "Debug.h"
 #include <freeglut.h>
 #include <iostream>
@@ -199,18 +5,30 @@
 #include <complex>
 //#include "vld.h"
 
+#include "Obj.h"
 #include "Utils.h"
 #include "Shader.h"
 #include "ShaderLoader.h"
 #include "Mesh.h"
-#include "Utils.h"
-
-glm::mat4 modelMatrix;
+#include "Texture.h"
 
 Mesh* myFractalMesh = nullptr;
-
-//Second quad
 Shader* myFractalShader = nullptr;
+Texture* myFractalTex = nullptr;
+
+const static int SCREEN_WIDTH = 960;
+const static int SCREEN_HEIGHT = 540;
+
+struct Pixel
+{
+	float r;
+	float g;
+	float b;
+	float a;
+};
+
+Pixel pixelData[SCREEN_WIDTH][SCREEN_HEIGHT];
+
 using std::complex;
 
 void display();
@@ -241,40 +59,64 @@ int main(int argc, char** argv)
 
 	SetGlobalGLSettings();
 
-	/////Input function callbacks
-	////KeyBoard
-	//glutKeyboardFunc(Utils::KeyBoardDown);
-	//glutKeyboardUpFunc(Utils::KeyBoardUp);
-	//glutSpecialFunc(Utils::SpecialKeyBoardDown);
-	//glutSpecialUpFunc(Utils::SpecialKeyBoardUp);
+	for (int i = 0; i < Utils::SCREEN_WIDTH; ++i)
+	{
+		for (int j = 0; j < Utils::SCREEN_HEIGHT; ++j)
+		{
+			pixelData[i][j].r = 0.5f;
+			pixelData[i][j].g = 1.0f;
+			pixelData[i][j].b = 0.5f;
+			pixelData[i][j].a = 1.0f;
+		}
+	}
 
-	////Mouse
-	//glutMouseFunc(Utils::MouseClick);
-	//glutMotionFunc(Utils::MouseMove);
-	//glutPassiveMotionFunc(Utils::MousePassiveMove);
+
+	myFractalMesh = new Mesh(Objects::vertices1, Objects::indices1);
+
+	myFractalShader = new Shader();
+
+	myFractalTex = new Texture(0, reinterpret_cast<float *>(pixelData));
+	
+
 	
 	glutDisplayFunc(display);
 	glutMainLoop();
 	return 0;
 }
-
 void display()
 {
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	const int width = glutGet(GLUT_WINDOW_WIDTH);
-	const int height = glutGet(GLUT_WINDOW_HEIGHT);
-	glOrtho(0, width, 0, height, -1, 1);
+	myFractalShader->Bind();
+	myFractalTex->Bind();
+	myFractalShader->SetUniform1i("u_tex1", 0);
 
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	compute_mandelbrot(-1.0, 0.5, 0.625, -1.2);
+	myFractalMesh->Bind();
+	glDrawElements(GL_TRIANGLES, myFractalMesh->GetindicesCount(), GL_UNSIGNED_INT, static_cast<void *>(0));
+	Mesh::Unbind();
+	Texture::Unbind();
+	Shader::Unbind();
 	glutSwapBuffers();
 }
+
+//void display()
+//{
+//	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+//	glClear(GL_COLOR_BUFFER_BIT);
+//
+//	glMatrixMode(GL_PROJECTION);
+//	glLoadIdentity();
+//	const int width = glutGet(GLUT_WINDOW_WIDTH);
+//	const int height = glutGet(GLUT_WINDOW_HEIGHT);
+//	glOrtho(0, width, 0, height, -1, 1);
+//
+//	glMatrixMode(GL_MODELVIEW);
+//	glLoadIdentity();
+//
+//	compute_mandelbrot(-1.0, 0.5, 0.625, -1.2);
+//	glutSwapBuffers();
+//}
 
 // Render the Mandelbrot set into the image array.
 // The parameters specify the region on the complex plane to plot.
@@ -320,7 +162,6 @@ void compute_mandelbrot(double left, double right, double top, double bottom)
 			}
 			else
 			{
-				
 				//Set pixel colour based on number of iterations
 				glColor3f(1.0, sin(iterations) * 100, cos(iterations) * 100);
 				// z escaped within less than MAX_ITERATIONS

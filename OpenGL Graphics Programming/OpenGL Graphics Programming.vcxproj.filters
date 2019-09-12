@@ -71,5 +71,8 @@
     <ClInclude Include="WorkQueue.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Obj.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

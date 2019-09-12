@@ -11,7 +11,9 @@
 unsigned int UniformGetLocation(const std::string& _name);
 
 Shader::Shader()
-= default;
+{
+	m_programID = ShaderLoader::CreateProgram("Shaders/DefaultVertexShader.shader", "Shaders/DefaultFragmentShader.shader");
+}
 
 Shader::Shader(const char* _vertexSrc, const char* _fragmentSrc)
 {

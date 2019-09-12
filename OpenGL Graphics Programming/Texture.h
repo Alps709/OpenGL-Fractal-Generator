@@ -3,7 +3,7 @@ class Texture
 {
 public:
 	Texture() = default;
-	Texture(const char* _filePath, unsigned short _slot);
+	Texture(unsigned short _slot, float* _pixelArray);
 	~Texture();
 
 	void Bind() const;
@@ -13,7 +13,6 @@ public:
 
 private:
 	unsigned int m_textureID{};
-	const char* m_filePath{};
 	int m_width{0};
 	int m_height{0};
 
