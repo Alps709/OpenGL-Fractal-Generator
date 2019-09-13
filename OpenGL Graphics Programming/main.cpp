@@ -69,7 +69,7 @@ int main(int argc, char** argv)
 	SetGlobalGLSettings();
 	unsigned int skipNum = 0;
 	myClock.Initialise();
-	compute_mandelbrot(skipNum, -1.5, 0.0, 0.90, -0.0);
+	compute_mandelbrot(skipNum, -1.5, 0.0, 1.20, -1.0);
 	myClock.Process();
 
 	std::cout << "\n\nIt took " << myClock.GetDeltaTick() / 1000.0 << " seconds to calculate the mandlebrot fractal.\n\n";
@@ -123,7 +123,7 @@ void compute_mandelbrot(unsigned int& skipNum, double left, double right, double
 	// The number of times to iterate before we assume that a point isn't in the
 	// Mandelbrot set.
 	// (You may need to turn this up if you zoom further into the set.)
-	const int MAX_ITERATIONS = 500;
+	const int MAX_ITERATIONS = 100;
 
 	const int height = Utils::g_SCREEN_HEIGHT;
 	const int width = Utils::g_SCREEN_WIDTH;
@@ -179,8 +179,8 @@ void compute_mandelbrot(unsigned int& skipNum, double left, double right, double
 					// z escaped within less than MAX_ITERATIONS
 					// iterations. This point isn't in the set.
 					pixelData[y][x].r = 255;
-					pixelData[y][x].g = sin(iterations) * 255;
-					pixelData[y][x].b = cos(iterations) * 255;
+					pixelData[y][x].g = abs(sin(iterations)) * 255;
+					pixelData[y][x].b = abs(cos(iterations)) * 255;
 					pixelData[y][x].a = 255;
 				}
 			}
