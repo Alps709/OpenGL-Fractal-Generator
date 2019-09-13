@@ -3,7 +3,7 @@ class Texture
 {
 public:
 	Texture() = default;
-	Texture(unsigned short _slot, float* _pixelArray);
+	Texture(unsigned short _slot, unsigned char* _pixelArray);
 	~Texture();
 
 	void Bind() const;

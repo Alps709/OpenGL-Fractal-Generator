@@ -11,6 +11,9 @@
 #include "ShaderLoader.h"
 #include "Mesh.h"
 #include "Texture.h"
+#include "clock.h"
+
+CClock myClock;
 
 Mesh* myFractalMesh = nullptr;
 Shader* myFractalShader = nullptr;
@@ -21,19 +24,28 @@ const static int SCREEN_HEIGHT = 540;
 
 struct Pixel
 {
-	float r;
-	float g;
-	float b;
-	float a;
+	unsigned char r;
+	unsigned char g;
+	unsigned char b;
+	unsigned char a;
+
+	bool operator==(const Pixel &other) const
+	{
+		return (r == other.r
+			&& g == other.g
+			&& b == other.b
+			&& a == other.a);
+	}
 };
 
-Pixel pixelData[SCREEN_WIDTH][SCREEN_HEIGHT];
+
+Pixel pixelData[540][960];
 
 using std::complex;
 
 void display();
 void SetGlobalGLSettings();
-void compute_mandelbrot(double left, double right, double top, double bottom);
+void compute_mandelbrot(unsigned int& skipNum, double left, double right, double top, double bottom);
 float EaseInOut(float t, float b, float c, float d);
 
 int main(int argc, char** argv)
@@ -58,24 +70,31 @@ int main(int argc, char** argv)
 	}
 
 	SetGlobalGLSettings();
+	unsigned int skipNum = 0;
+	myClock.Initialise();
+	compute_mandelbrot(skipNum, -1.5, 0.0, 0.90, -0.0);
+	myClock.Process();
 
-	for (int i = 0; i < Utils::SCREEN_WIDTH; ++i)
-	{
-		for (int j = 0; j < Utils::SCREEN_HEIGHT; ++j)
-		{
-			pixelData[i][j].r = 0.5f;
-			pixelData[i][j].g = 1.0f;
-			pixelData[i][j].b = 0.5f;
-			pixelData[i][j].a = 1.0f;
-		}
-	}
+	std::cout << "\n\nIt took " << myClock.GetDeltaTick() / 1000.0 << " seconds to calculate the mandlebrot fractal.\n\n";
+	std::cout << "Number of checks skipped: " << skipNum << std::endl;
+
+	//for (int i = 0; i < 540; ++i)
+	//{
+	//	for (int j = 0; j < 960; ++j)
+	//	{
+	//		pixelData[i][j].r = 0.5f;
+	//		pixelData[i][j].g = 1.0f;
+	//		pixelData[i][j].b = 0.5f;
+	//		pixelData[i][j].a = 1.0f;
+	//	}
+	//}
 
 
 	myFractalMesh = new Mesh(Objects::vertices1, Objects::indices1);
 
 	myFractalShader = new Shader();
 
-	myFractalTex = new Texture(0, reinterpret_cast<float *>(pixelData));
+	myFractalTex = new Texture(0, reinterpret_cast<unsigned char *>(pixelData));
 	
 
 	
@@ -100,77 +119,76 @@ void display()
 	glutSwapBuffers();
 }
 
-//void display()
-//{
-//	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-//	glClear(GL_COLOR_BUFFER_BIT);
-//
-//	glMatrixMode(GL_PROJECTION);
-//	glLoadIdentity();
-//	const int width = glutGet(GLUT_WINDOW_WIDTH);
-//	const int height = glutGet(GLUT_WINDOW_HEIGHT);
-//	glOrtho(0, width, 0, height, -1, 1);
-//
-//	glMatrixMode(GL_MODELVIEW);
-//	glLoadIdentity();
-//
-//	compute_mandelbrot(-1.0, 0.5, 0.625, -1.2);
-//	glutSwapBuffers();
-//}
-
 // Render the Mandelbrot set into the image array.
 // The parameters specify the region on the complex plane to plot.
-void compute_mandelbrot(double left, double right, double top, double bottom)
+void compute_mandelbrot(unsigned int& skipNum, double left, double right, double top, double bottom)
 {
 	// The number of times to iterate before we assume that a point isn't in the
 	// Mandelbrot set.
 	// (You may need to turn this up if you zoom further into the set.)
 	const int MAX_ITERATIONS = 100;
 
-	const int width = glutGet(GLUT_WINDOW_WIDTH);
-	const int height = glutGet(GLUT_WINDOW_HEIGHT);
+	const int width = 960;
+	const int height = 540;
 
-	glBegin(GL_POINTS); // start drawing in single pixel mode
-	for (int y = 0; y < height; ++y)
+	const Pixel black = { 0, 0, 0, 1 };
+
+	for (int i = 0; i < 2; ++i)
 	{
-		for (int x = 0; x < width; ++x)
+		for (int y = 0; y < height; ++y)
 		{
-			// Work out the point in the complex plane that
-			// corresponds to this pixel in the output image.
-			complex<double> c(left + (x * (right - left) / width),
-				top + (y * (bottom - top) / height));
-
-			// Start off z at (0, 0).
-			complex<double> z(0.0, 0.0);
-
-			// Iterate z = z^2 + c until z moves more than 2 units
-			// away from (0, 0), or we've iterated too many times.
-			int iterations = 0;
-			while (abs(z) < 2.0 && iterations < MAX_ITERATIONS)
+			for (int x = i ^ (y % 2); x < width; x += 2)
 			{
-				z = (z * z) + c;
+				// Work out the point in the complex plane that
+				// corresponds to this pixel in the output image.
+				complex<double> c(left + (x * (right - left) / width),
+					top + (y * (bottom - top) / height));
 
-				++iterations;
-			}
+				// Start off z at (0, 0).
+				complex<double> z(0.0, 0.0);
 
-			if (iterations == MAX_ITERATIONS)
-			{
-				glColor3f(0.0, 0.0, 0.0); // Set color to draw mandelbrot
-				// z didn't escape from the circle.
-				// This point is in the Mandelbrot set.
-				glVertex2i(x, y);
-			}
-			else
-			{
-				//Set pixel colour based on number of iterations
-				glColor3f(1.0, sin(iterations) * 100, cos(iterations) * 100);
-				// z escaped within less than MAX_ITERATIONS
-				// iterations. This point isn't in the set.
-				glVertex2i(x, y);
+				
+				if(i == 1 && y > 0 && x > 0 && y < 539 && x < 959)
+				{
+					if(pixelData[y - 1][x] == black && pixelData[y + 1][x] == black && pixelData[y][x - 1] == black && pixelData[y][x + 1] == black)
+					{
+						pixelData[y][x] = black;
+						skipNum++;
+						continue;
+					}
+				}
+				
+				// Iterate z = z^2 + c until z moves more than 2 units
+				// away from (0, 0), or we've iterated too many times.
+				int iterations = 0;
+				while (abs(z) < 2.0 && iterations < MAX_ITERATIONS)
+				{
+					z = (z * z) + c;
+
+					++iterations;
+				}
+
+				if (iterations == MAX_ITERATIONS)
+				{
+					// Set color to draw mandelbrot
+					// z didn't escape from the circle.
+					// This point is in the Mandelbrot set.
+
+					pixelData[y][x] = black;
+				}
+				else
+				{
+					//Set pixel colour based on number of iterations
+					// z escaped within less than MAX_ITERATIONS
+					// iterations. This point isn't in the set.
+					pixelData[y][x].r = 0;
+					pixelData[y][x].g = sin(iterations) * 255;
+					pixelData[y][x].b = cos(iterations) * 255;
+					pixelData[y][x].a = 255;
+				}
 			}
 		}
 	}
-	glEnd();
 }	
 
 float EaseInOut(float t, float b, float c, float d)

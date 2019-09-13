@@ -9,7 +9,7 @@
 const static int SCREEN_WIDTH = 960;
 const static int SCREEN_HEIGHT = 540;
 
-Texture::Texture(unsigned short _slot, float* _pixelArray)
+Texture::Texture(unsigned short _slot, unsigned char* _pixelArray)
 	:  m_slot(_slot)
 {
 	//Make sure slot is not higher than 16
@@ -24,7 +24,7 @@ Texture::Texture(unsigned short _slot, float* _pixelArray)
 	GLCall(glGenTextures(1, &m_textureID));
 	GLCall(glBindTexture(GL_TEXTURE_2D, m_textureID));
 	
-	GLCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16, SCREEN_WIDTH, SCREEN_HEIGHT, 0, GL_RGBA, GL_FLOAT, _pixelArray));
+	GLCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16, SCREEN_WIDTH, SCREEN_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, _pixelArray));
 
 	GLCall(glTextureParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));
 	GLCall(glTextureParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT));
