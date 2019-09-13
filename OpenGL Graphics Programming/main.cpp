@@ -19,9 +19,6 @@ Mesh* myFractalMesh = nullptr;
 Shader* myFractalShader = nullptr;
 Texture* myFractalTex = nullptr;
 
-const static int SCREEN_WIDTH = 960;
-const static int SCREEN_HEIGHT = 540;
-
 struct Pixel
 {
 	unsigned char r;
@@ -39,7 +36,7 @@ struct Pixel
 };
 
 
-Pixel pixelData[540][960];
+Pixel pixelData[Utils::g_SCREEN_HEIGHT][Utils::g_SCREEN_WIDTH];
 
 using std::complex;
 
@@ -54,7 +51,7 @@ int main(int argc, char** argv)
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
 	glutInitWindowPosition(100, 100);
-	glutInitWindowSize(Utils::SCREEN_WIDTH, Utils::SCREEN_HEIGHT);
+	glutInitWindowSize(Utils::g_SCREEN_WIDTH, Utils::g_SCREEN_HEIGHT);
 	glutCreateWindow("Anton's OpenGL Window");
 
 	//Print openGL version
@@ -126,10 +123,10 @@ void compute_mandelbrot(unsigned int& skipNum, double left, double right, double
 	// The number of times to iterate before we assume that a point isn't in the
 	// Mandelbrot set.
 	// (You may need to turn this up if you zoom further into the set.)
-	const int MAX_ITERATIONS = 100;
+	const int MAX_ITERATIONS = 500;
 
-	const int width = 960;
-	const int height = 540;
+	const int height = Utils::g_SCREEN_HEIGHT;
+	const int width = Utils::g_SCREEN_WIDTH;
 
 	const Pixel black = { 0, 0, 0, 1 };
 
@@ -148,7 +145,7 @@ void compute_mandelbrot(unsigned int& skipNum, double left, double right, double
 				complex<double> z(0.0, 0.0);
 
 				
-				if(i == 1 && y > 0 && x > 0 && y < 539 && x < 959)
+				if(i == 1 && y > 0 && x > 0 && y < height - 1 && x < width - 1)
 				{
 					if(pixelData[y - 1][x] == black && pixelData[y + 1][x] == black && pixelData[y][x - 1] == black && pixelData[y][x + 1] == black)
 					{
@@ -181,7 +178,7 @@ void compute_mandelbrot(unsigned int& skipNum, double left, double right, double
 					//Set pixel colour based on number of iterations
 					// z escaped within less than MAX_ITERATIONS
 					// iterations. This point isn't in the set.
-					pixelData[y][x].r = 0;
+					pixelData[y][x].r = 255;
 					pixelData[y][x].g = sin(iterations) * 255;
 					pixelData[y][x].b = cos(iterations) * 255;
 					pixelData[y][x].a = 255;
