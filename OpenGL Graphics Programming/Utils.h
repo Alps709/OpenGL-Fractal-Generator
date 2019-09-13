@@ -2,8 +2,8 @@
 
 namespace Utils
 {
-	const static int g_SCREEN_WIDTH = 1280;
-	const static int g_SCREEN_HEIGHT = 720;
+	const static int g_SCREEN_WIDTH = 1000;
+	const static int g_SCREEN_HEIGHT = 1000;
 
 	//enum InputState
 	//{

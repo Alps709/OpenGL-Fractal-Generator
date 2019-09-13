@@ -75,25 +75,11 @@ int main(int argc, char** argv)
 	std::cout << "\n\nIt took " << myClock.GetDeltaTick() / 1000.0 << " seconds to calculate the mandlebrot fractal.\n\n";
 	std::cout << "Number of checks skipped: " << skipNum << std::endl;
 
-	//for (int i = 0; i < 540; ++i)
-	//{
-	//	for (int j = 0; j < 960; ++j)
-	//	{
-	//		pixelData[i][j].r = 0.5f;
-	//		pixelData[i][j].g = 1.0f;
-	//		pixelData[i][j].b = 0.5f;
-	//		pixelData[i][j].a = 1.0f;
-	//	}
-	//}
-
-
 	myFractalMesh = new Mesh(Objects::vertices1, Objects::indices1);
 
 	myFractalShader = new Shader();
 
 	myFractalTex = new Texture(0, reinterpret_cast<unsigned char *>(pixelData));
-	
-
 	
 	glutDisplayFunc(display);
 	glutMainLoop();
@@ -123,7 +109,7 @@ void compute_mandelbrot(unsigned int& skipNum, double left, double right, double
 	// The number of times to iterate before we assume that a point isn't in the
 	// Mandelbrot set.
 	// (You may need to turn this up if you zoom further into the set.)
-	const int MAX_ITERATIONS = 100;
+	const int MAX_ITERATIONS = 500;
 
 	const int height = Utils::g_SCREEN_HEIGHT;
 	const int width = Utils::g_SCREEN_WIDTH;
@@ -134,8 +120,29 @@ void compute_mandelbrot(unsigned int& skipNum, double left, double right, double
 	{
 		for (int y = 0; y < height; ++y)
 		{
+			//Use bitwise XOR with i and (y % 2) as the inputs, 
+			//This makes it so the pixels are processed in a checkerboard pattern, with each i iteration processing a different colour of the checkerboard
+			//Having it processed in this pattern allows orthogonal checking of the pixels around the current pixel, on i's second iteration
+			//So that it can skip calculation of pixels if every pixel around the current one, has the same colour
+			
 			for (int x = i ^ (y % 2); x < width; x += 2)
 			{
+				//Check if pixel is not on the outisde border
+				if (i == 1 && y > 0 && x > 0 && y < height - 1 && x < width - 1)
+				{
+					Pixel tempPix = pixelData[y - 1][x];
+					//Check if the pixels above, below, left and right are the same colour as the current pixel
+					if (pixelData[y + 1][x] == tempPix && pixelData[y][x - 1] == tempPix && pixelData[y][x + 1] == tempPix)
+					{
+						//The the 4 surrounding orthogonal pixels are the same colour
+						//Then the current pixel must also be that colour and no calculation is needed
+						pixelData[y][x] = tempPix;
+						//Counts number of skipped pixel calculations
+						skipNum++;
+						continue;
+					}
+				}
+
 				// Work out the point in the complex plane that
 				// corresponds to this pixel in the output image.
 				complex<double> c(left + (x * (right - left) / width),
@@ -143,17 +150,6 @@ void compute_mandelbrot(unsigned int& skipNum, double left, double right, double
 
 				// Start off z at (0, 0).
 				complex<double> z(0.0, 0.0);
-
-				
-				if(i == 1 && y > 0 && x > 0 && y < height - 1 && x < width - 1)
-				{
-					if(pixelData[y - 1][x] == black && pixelData[y + 1][x] == black && pixelData[y][x - 1] == black && pixelData[y][x + 1] == black)
-					{
-						pixelData[y][x] = black;
-						skipNum++;
-						continue;
-					}
-				}
 				
 				// Iterate z = z^2 + c until z moves more than 2 units
 				// away from (0, 0), or we've iterated too many times.
@@ -167,10 +163,7 @@ void compute_mandelbrot(unsigned int& skipNum, double left, double right, double
 
 				if (iterations == MAX_ITERATIONS)
 				{
-					// Set color to draw mandelbrot
-					// z didn't escape from the circle.
-					// This point is in the Mandelbrot set.
-
+					//Max iterations was hit so say the pixel is in the set
 					pixelData[y][x] = black;
 				}
 				else
@@ -179,8 +172,8 @@ void compute_mandelbrot(unsigned int& skipNum, double left, double right, double
 					// z escaped within less than MAX_ITERATIONS
 					// iterations. This point isn't in the set.
 					pixelData[y][x].r = 255;
-					pixelData[y][x].g = abs(sin(iterations)) * 255;
-					pixelData[y][x].b = abs(cos(iterations)) * 255;
+					pixelData[y][x].g = sin(iterations) * 255;
+					pixelData[y][x].b = cos(iterations) * 255;
 					pixelData[y][x].a = 255;
 				}
 			}
