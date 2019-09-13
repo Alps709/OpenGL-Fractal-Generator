@@ -2,6 +2,8 @@
 
 namespace Utils
 {
+	bool useOptimised = false;
+	unsigned int g_maxIterations = 100;
 	const static int g_SCREEN_WIDTH = 1000;
 	const static int g_SCREEN_HEIGHT = 1000;
 

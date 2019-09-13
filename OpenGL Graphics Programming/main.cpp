@@ -35,14 +35,14 @@ struct Pixel
 	}
 };
 
-
 Pixel pixelData[Utils::g_SCREEN_HEIGHT][Utils::g_SCREEN_WIDTH];
 
 using std::complex;
 
 void display();
 void SetGlobalGLSettings();
-void compute_mandelbrot(unsigned int& skipNum, double left, double right, double top, double bottom);
+void calcMandelbrotOptimised(unsigned int& skipNum, double left, double right, double top, double bottom);
+void calcMandelbrot(double left, double right, double top, double bottom);
 float EaseInOut(float t, float b, float c, float d);
 
 int main(int argc, char** argv)
@@ -68,9 +68,19 @@ int main(int argc, char** argv)
 
 	SetGlobalGLSettings();
 	unsigned int skipNum = 0;
-	myClock.Initialise();
-	compute_mandelbrot(skipNum, -1.5, 0.0, 1.20, -1.0);
-	myClock.Process();
+
+	if(Utils::useOptimised)
+	{
+		myClock.Initialise();
+		calcMandelbrotOptimised(skipNum, -1.5, 0.0, 1.20, -1.0);
+		myClock.Process();
+	}
+	else
+	{
+		myClock.Initialise();
+		calcMandelbrot(-1.5, 0.0, 1.20, -1.0);
+		myClock.Process();
+	}
 
 	std::cout << "\n\nIt took " << myClock.GetDeltaTick() / 1000.0 << " seconds to calculate the mandlebrot fractal.\n\n";
 	std::cout << "Number of checks skipped: " << skipNum << std::endl;
@@ -104,17 +114,17 @@ void display()
 
 // Render the Mandelbrot set into the image array.
 // The parameters specify the region on the complex plane to plot.
-void compute_mandelbrot(unsigned int& skipNum, double left, double right, double top, double bottom)
+void calcMandelbrotOptimised(unsigned int& skipNum, double left, double right, double top, double bottom)
 {
 	// The number of times to iterate before we assume that a point isn't in the
 	// Mandelbrot set.
 	// (You may need to turn this up if you zoom further into the set.)
-	const int MAX_ITERATIONS = 500;
+	const int MAX_ITERATIONS = Utils::g_maxIterations;
 
 	const int height = Utils::g_SCREEN_HEIGHT;
 	const int width = Utils::g_SCREEN_WIDTH;
 
-	const Pixel black = { 0, 0, 0, 1 };
+	const Pixel black{ 0, 0, 0, 1 };
 
 	for (int i = 0; i < 2; ++i)
 	{
@@ -124,7 +134,6 @@ void compute_mandelbrot(unsigned int& skipNum, double left, double right, double
 			//This makes it so the pixels are processed in a checkerboard pattern, with each i iteration processing a different colour of the checkerboard
 			//Having it processed in this pattern allows orthogonal checking of the pixels around the current pixel, on i's second iteration
 			//So that it can skip calculation of pixels if every pixel around the current one, has the same colour
-			
 			for (int x = i ^ (y % 2); x < width; x += 2)
 			{
 				//Check if pixel is not on the outisde border
@@ -179,7 +188,63 @@ void compute_mandelbrot(unsigned int& skipNum, double left, double right, double
 			}
 		}
 	}
-}	
+}
+
+void calcMandlebrot(double left, double right, double top, double bottom)
+{
+	// The number of times to iterate before we assume that a point isn't in the
+	// Mandelbrot set.
+	const unsigned int MAX_ITERATIONS = Utils::g_maxIterations;
+
+	const int height = Utils::g_SCREEN_HEIGHT;
+	const int width = Utils::g_SCREEN_WIDTH;
+
+	const Pixel black{ 0, 0, 0, 1 };
+
+	for (int y = 0; y < height; ++y)
+	{
+		//Use bitwise XOR with i and (y % 2) as the inputs, 
+		//This makes it so the pixels are processed in a checkerboard pattern, with each i iteration processing a different colour of the checkerboard
+		//Having it processed in this pattern allows orthogonal checking of the pixels around the current pixel, on i's second iteration
+		//So that it can skip calculation of pixels if every pixel around the current one, has the same colour
+		for (int x = 0; x < width; ++x)
+		{
+			// Work out the point in the complex plane that
+			// corresponds to this pixel in the output image.
+			complex<double> c(left + (x * (right - left) / width),
+				top + (y * (bottom - top) / height));
+
+			// Start off z at (0, 0).
+			complex<double> z(0.0, 0.0);
+
+			// Iterate z = z^2 + c until z moves more than 2 units
+			// away from (0, 0), or we've iterated too many times.
+			int iterations = 0;
+			while (abs(z) < 2.0 && iterations < MAX_ITERATIONS)
+			{
+				z = (z * z) + c;
+
+				++iterations;
+			}
+
+			if (iterations == MAX_ITERATIONS)
+			{
+				//Max iterations was hit so say the pixel is in the set
+				pixelData[y][x] = black;
+			}
+			else
+			{
+				//Set pixel colour based on number of iterations
+				// z escaped within less than MAX_ITERATIONS
+				// iterations. This point isn't in the set.
+				pixelData[y][x].r = 255;
+				pixelData[y][x].g = sin(iterations) * 255;
+				pixelData[y][x].b = cos(iterations) * 255;
+				pixelData[y][x].a = 255;
+			}
+		}
+	}
+}
 
 float EaseInOut(float t, float b, float c, float d)
 {

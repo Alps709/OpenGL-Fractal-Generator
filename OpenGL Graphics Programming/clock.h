@@ -31,8 +31,8 @@ private:
 public:
 
 protected:
-	double m_fTimeElapsed;
-	double m_fDeltaTime;
+	long long m_fTimeElapsed;
+	long long m_fDeltaTime;
 	std::chrono::high_resolution_clock::time_point m_fLastTime;
 	std::chrono::high_resolution_clock::time_point m_fCurrentTime;
 
