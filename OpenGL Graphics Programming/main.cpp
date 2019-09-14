@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <complex>
+#include <glm.hpp>
 //#include "vld.h"
 
 #include "Obj.h"
@@ -41,7 +42,7 @@ using std::complex;
 
 void display();
 void SetGlobalGLSettings();
-void calcMandelbrotOptimised(unsigned int& skipNum, double left, double right, double top, double bottom);
+void calcMandelbrotOptimised(bool _skipOnlyBlack, unsigned int& skipNum, double left, double right, double top, double bottom);
 void calcMandelbrot(double left, double right, double top, double bottom);
 float EaseInOut(float t, float b, float c, float d);
 
@@ -69,21 +70,23 @@ int main(int argc, char** argv)
 	SetGlobalGLSettings();
 	unsigned int skipNum = 0;
 
-	if(Utils::useOptimised)
-	{
+	//if(Utils::useOptimised)
+	//{
 		myClock.Initialise();
-		calcMandelbrotOptimised(skipNum, -1.5, 0.0, 1.20, -1.0);
+		calcMandelbrotOptimised(true, skipNum, -1.5, 0.0, 1.20, -1.0);
 		myClock.Process();
-	}
-	else
-	{
-		myClock.Initialise();
-		calcMandelbrot(-1.5, 0.0, 1.20, -1.0);
-		myClock.Process();
-	}
 
-	std::cout << "\n\nIt took " << myClock.GetDeltaTick() / 1000.0 << " seconds to calculate the mandlebrot fractal.\n\n";
-	std::cout << "Number of checks skipped: " << skipNum << std::endl;
+		std::cout << "\n\nIt took " << myClock.GetDeltaTick() / 1000.0 << " seconds to calculate the mandlebrot fractal only skipping black.\n\n";
+		std::cout << "Number of checks skipped: " << skipNum << std::endl;
+
+		skipNum = 0;
+		myClock.Initialise();
+		calcMandelbrotOptimised(false, skipNum, -1.5, 0.0, 1.20, -1.0);
+		myClock.Process();
+
+		std::cout << "\n\nIt took " << myClock.GetDeltaTick() / 1000.0 << " seconds to calculate the mandlebrot fractal skipping all.\n\n";
+		std::cout << "Number of checks skipped: " << skipNum << std::endl;
+
 
 	myFractalMesh = new Mesh(Objects::vertices1, Objects::indices1);
 
@@ -114,7 +117,7 @@ void display()
 
 // Render the Mandelbrot set into the image array.
 // The parameters specify the region on the complex plane to plot.
-void calcMandelbrotOptimised(unsigned int& skipNum, double left, double right, double top, double bottom)
+void calcMandelbrotOptimised(bool _skipOnlyBlack, unsigned int& skipNum, double left, double right, double top, double bottom)
 {
 	// The number of times to iterate before we assume that a point isn't in the
 	// Mandelbrot set.
@@ -125,6 +128,8 @@ void calcMandelbrotOptimised(unsigned int& skipNum, double left, double right, d
 	const int width = Utils::g_SCREEN_WIDTH;
 
 	const Pixel black{ 0, 0, 0, 1 };
+
+	const float B = 256 * 256;
 
 	for (int i = 0; i < 2; ++i)
 	{
@@ -139,33 +144,54 @@ void calcMandelbrotOptimised(unsigned int& skipNum, double left, double right, d
 				//Check if pixel is not on the outisde border
 				if (i == 1 && y > 0 && x > 0 && y < height - 1 && x < width - 1)
 				{
-					Pixel tempPix = pixelData[y - 1][x];
-					//Check if the pixels above, below, left and right are the same colour as the current pixel
-					if (pixelData[y + 1][x] == tempPix && pixelData[y][x - 1] == tempPix && pixelData[y][x + 1] == tempPix)
+					if(!_skipOnlyBlack)
 					{
-						//The the 4 surrounding orthogonal pixels are the same colour
-						//Then the current pixel must also be that colour and no calculation is needed
-						pixelData[y][x] = tempPix;
-						//Counts number of skipped pixel calculations
-						skipNum++;
-						continue;
+						Pixel tempPix = pixelData[y - 1][x];
+						//Check if the pixels above, below, left and right are the same colour as the current pixel
+						if (pixelData[y + 1][x] == tempPix && pixelData[y][x - 1] == tempPix && pixelData[y][x + 1] == tempPix)
+						{
+							//The the 4 surrounding orthogonal pixels are the same colour
+							//Then the current pixel must also be that colour and no calculation is needed
+							pixelData[y][x] = tempPix;
+							//Counts number of skipped pixel calculations
+							skipNum++;
+							continue;
+						}
 					}
+					else
+					{
+						//Check if the pixels above, below, left and right are the same colour as the current pixel
+						if (pixelData[y - 1][x] == black || pixelData[y + 1][x] == black && pixelData[y][x - 1] == black && pixelData[y][x + 1] == black)
+						{
+							//The the 4 surrounding orthogonal pixels are the same colour
+							//Then the current pixel must also be that colour and no calculation is needed
+							pixelData[y][x] = black;
+							//Counts number of skipped pixel calculations
+							skipNum++;
+							continue;
+						}
+					}
+					
+					
 				}
 
 				// Work out the point in the complex plane that
 				// corresponds to this pixel in the output image.
-				complex<double> c(left + (x * (right - left) / width),
+				glm::vec2 c(left + (x * (right - left) / width),
 					top + (y * (bottom - top) / height));
 
 				// Start off z at (0, 0).
-				complex<double> z(0.0, 0.0);
+				glm::vec2 z(0.0, 0.0);
 				
 				// Iterate z = z^2 + c until z moves more than 2 units
 				// away from (0, 0), or we've iterated too many times.
-				int iterations = 0;
-				while (abs(z) < 2.0 && iterations < MAX_ITERATIONS)
+				unsigned int iterations = 0;
+				while (iterations < MAX_ITERATIONS)
 				{
-					z = (z * z) + c;
+					//z = z^2 + c
+					z = glm::vec2(z.x * z.x - z.y * z.y, 2 * z.x * z.y) + c;
+
+					if (glm::dot(z, z) > B) break;
 
 					++iterations;
 				}
@@ -181,8 +207,8 @@ void calcMandelbrotOptimised(unsigned int& skipNum, double left, double right, d
 					// z escaped within less than MAX_ITERATIONS
 					// iterations. This point isn't in the set.
 					pixelData[y][x].r = 255;
-					pixelData[y][x].g = sin(iterations) * 255;
-					pixelData[y][x].b = cos(iterations) * 255;
+					pixelData[y][x].g = unsigned char(sin(iterations) * 255);
+					pixelData[y][x].b = unsigned char(cos(iterations) * 255);
 					pixelData[y][x].a = 255;
 				}
 			}
@@ -190,7 +216,7 @@ void calcMandelbrotOptimised(unsigned int& skipNum, double left, double right, d
 	}
 }
 
-void calcMandlebrot(double left, double right, double top, double bottom)
+void calcMandelbrot(double left, double right, double top, double bottom)
 {
 	// The number of times to iterate before we assume that a point isn't in the
 	// Mandelbrot set.
@@ -220,7 +246,7 @@ void calcMandlebrot(double left, double right, double top, double bottom)
 			// Iterate z = z^2 + c until z moves more than 2 units
 			// away from (0, 0), or we've iterated too many times.
 			int iterations = 0;
-			while (abs(z) < 2.0 && iterations < MAX_ITERATIONS)
+			while (abs(z) < 2.0 && static_cast<unsigned int>(iterations) < MAX_ITERATIONS)
 			{
 				z = (z * z) + c;
 
@@ -238,8 +264,8 @@ void calcMandlebrot(double left, double right, double top, double bottom)
 				// z escaped within less than MAX_ITERATIONS
 				// iterations. This point isn't in the set.
 				pixelData[y][x].r = 255;
-				pixelData[y][x].g = sin(iterations) * 255;
-				pixelData[y][x].b = cos(iterations) * 255;
+				pixelData[y][x].g = char(sin(iterations) * 255);
+				pixelData[y][x].b = char(cos(iterations) * 255);
 				pixelData[y][x].a = 255;
 			}
 		}
