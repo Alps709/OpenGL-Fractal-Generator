@@ -42,7 +42,7 @@ using std::complex;
 
 void display();
 void SetGlobalGLSettings();
-void calcMandelbrotOptimised(bool _skipOnlyBlack, unsigned int& skipNum, double left, double right, double top, double bottom);
+void calcMandelbrotOptimised(bool _useVec2, bool _skipOnlyBlack, unsigned int& skipNum, double left, double right, double top, double bottom);
 void calcMandelbrot(double left, double right, double top, double bottom);
 float EaseInOut(float t, float b, float c, float d);
 
@@ -70,23 +70,13 @@ int main(int argc, char** argv)
 	SetGlobalGLSettings();
 	unsigned int skipNum = 0;
 
-	//if(Utils::useOptimised)
-	//{
-		myClock.Initialise();
-		calcMandelbrotOptimised(true, skipNum, -1.5, 0.0, 1.20, -1.0);
-		myClock.Process();
+	myClock.Initialise();
+	calcMandelbrotOptimised(true, false, skipNum, -1.5, 0.0, 1.20, -1.0);
+	myClock.Process();
 
-		std::cout << "\n\nIt took " << myClock.GetDeltaTick() / 1000.0 << " seconds to calculate the mandlebrot fractal only skipping black.\n\n";
-		std::cout << "Number of checks skipped: " << skipNum << std::endl;
-
-		skipNum = 0;
-		myClock.Initialise();
-		calcMandelbrotOptimised(false, skipNum, -1.5, 0.0, 1.20, -1.0);
-		myClock.Process();
-
-		std::cout << "\n\nIt took " << myClock.GetDeltaTick() / 1000.0 << " seconds to calculate the mandlebrot fractal skipping all.\n\n";
-		std::cout << "Number of checks skipped: " << skipNum << std::endl;
-
+	std::cout << "\n\nIt took " << myClock.GetDeltaTick() << " milliseconds to calculate the mandlebrot fractal,"
+		<< "\nwhen skipping all similar pixels and using glm::vec2.\n\n";
+	std::cout << "Number of checks skipped: " << skipNum << std::endl;
 
 	myFractalMesh = new Mesh(Objects::vertices1, Objects::indices1);
 
@@ -117,7 +107,7 @@ void display()
 
 // Render the Mandelbrot set into the image array.
 // The parameters specify the region on the complex plane to plot.
-void calcMandelbrotOptimised(bool _skipOnlyBlack, unsigned int& skipNum, double left, double right, double top, double bottom)
+void calcMandelbrotOptimised(bool _useVec2, bool _skipOnlyBlack, unsigned int& _skipNum, double _leftBorder, double _rightBorder, double _topBorder, double _bottomBorder)
 {
 	// The number of times to iterate before we assume that a point isn't in the
 	// Mandelbrot set.
@@ -147,53 +137,75 @@ void calcMandelbrotOptimised(bool _skipOnlyBlack, unsigned int& skipNum, double 
 					if(!_skipOnlyBlack)
 					{
 						Pixel tempPix = pixelData[y - 1][x];
-						//Check if the pixels above, below, left and right are the same colour as the current pixel
+						//Check if the pixels above, below, _leftBorder and _rightBorder are the same colour as the current pixel
 						if (pixelData[y + 1][x] == tempPix && pixelData[y][x - 1] == tempPix && pixelData[y][x + 1] == tempPix)
 						{
 							//The the 4 surrounding orthogonal pixels are the same colour
 							//Then the current pixel must also be that colour and no calculation is needed
 							pixelData[y][x] = tempPix;
 							//Counts number of skipped pixel calculations
-							skipNum++;
+							_skipNum++;
 							continue;
 						}
 					}
 					else
 					{
-						//Check if the pixels above, below, left and right are the same colour as the current pixel
+						//Check if the pixels above, below, _leftBorder and _rightBorder are the same colour as the current pixel
 						if (pixelData[y - 1][x] == black || pixelData[y + 1][x] == black && pixelData[y][x - 1] == black && pixelData[y][x + 1] == black)
 						{
 							//The the 4 surrounding orthogonal pixels are the same colour
 							//Then the current pixel must also be that colour and no calculation is needed
 							pixelData[y][x] = black;
 							//Counts number of skipped pixel calculations
-							skipNum++;
+							_skipNum++;
 							continue;
 						}
 					}
 					
 					
 				}
-
-				// Work out the point in the complex plane that
-				// corresponds to this pixel in the output image.
-				glm::vec2 c(left + (x * (right - left) / width),
-					top + (y * (bottom - top) / height));
-
-				// Start off z at (0, 0).
-				glm::vec2 z(0.0, 0.0);
 				
-				// Iterate z = z^2 + c until z moves more than 2 units
-				// away from (0, 0), or we've iterated too many times.
 				unsigned int iterations = 0;
-				while (iterations < MAX_ITERATIONS)
+				if (_useVec2)
 				{
-					//z = z^2 + c
-					z = glm::vec2(z.x * z.x - z.y * z.y, 2 * z.x * z.y) + c;
+					// Work out the point in the complex plane that
+					// corresponds to this pixel in the output image.
+					glm::vec2 c(_leftBorder + (x * (_rightBorder - _leftBorder) / width),
+						_topBorder + (y * (_bottomBorder - _topBorder) / height));
 
-					if (glm::dot(z, z) > B) break;
+					// Start off z at (0, 0).
+					glm::vec2 z(0.0, 0.0);
 
-					++iterations;
+					// Iterate z = z^2 + c until z moves more than 2 units
+					// away from (0, 0), or we've iterated too many times.
+					while (iterations < MAX_ITERATIONS)
+					{
+						//z = z^2 + c
+						z = glm::vec2(z.x * z.x - z.y * z.y, 2 * z.x * z.y) + c;
+
+						if (glm::dot(z, z) > B) break;
+
+						++iterations;
+					}
+				}
+				else
+				{
+					// Work out the point in the complex plane that
+					// corresponds to this pixel in the output image.
+					complex<double> c(_leftBorder + (x * (_rightBorder - _leftBorder) / width),
+						_topBorder + (y * (_bottomBorder - _topBorder) / height));
+
+					// Start off z at (0, 0).
+					complex<double> z(0.0, 0.0);
+
+					// Iterate z = z^2 + c until z moves more than 2 units
+					// away from (0, 0), or we've iterated too many times.
+					while (abs(z) < 2.0 && iterations < MAX_ITERATIONS)
+					{
+						z = (z * z) + c;
+						
+						++iterations;
+					}
 				}
 
 				if (iterations == MAX_ITERATIONS)
