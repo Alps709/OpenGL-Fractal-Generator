@@ -4,7 +4,7 @@
 #include <vector>
 #include <complex>
 #include <glm.hpp>
-//#include "vld.h"
+#include "vld.h"
 
 #include "Obj.h"
 #include "Utils.h"
@@ -13,12 +13,15 @@
 #include "Mesh.h"
 #include "Texture.h"
 #include "clock.h"
+#include "ThreadPool.h"
 
 CClock myClock;
 
 Mesh* myFractalMesh = nullptr;
 Shader* myFractalShader = nullptr;
 Texture* myFractalTex = nullptr;
+
+ThreadPool& threadPool = ThreadPool::GetInstance();
 
 struct Pixel
 {
@@ -36,6 +39,7 @@ struct Pixel
 	}
 };
 
+//Array of pixels that is made into a texture
 Pixel pixelData[Utils::g_SCREEN_HEIGHT][Utils::g_SCREEN_WIDTH];
 
 using std::complex;
@@ -68,10 +72,20 @@ int main(int argc, char** argv)
 	}
 
 	SetGlobalGLSettings();
+
+	
+	//threadPool.Start();
+
+	//Create for loop iterating over the height of the window
+	//Create a task that passes in the y/height value of the loop and sumbit it to the threadpool
+	//Have the task functor take in a y value and compute the mandlebrot function for a single row of pixels
+	//have the task functor write directly to the pixel array
+	
+	
 	unsigned int skipNum = 0;
 
 	myClock.Initialise();
-	calcMandelbrotOptimised(true, false, skipNum, -1.5, 0.0, 1.20, -1.0);
+	calcMandelbrotOptimised(true, false, skipNum, -2.0, 1.0, 1.20, -1.2);
 	myClock.Process();
 
 	std::cout << "\n\nIt took " << myClock.GetDeltaTick() << " milliseconds to calculate the mandlebrot fractal,"
@@ -86,6 +100,10 @@ int main(int argc, char** argv)
 	
 	glutDisplayFunc(display);
 	glutMainLoop();
+
+	delete myFractalMesh;
+	delete myFractalShader;
+	delete myFractalTex;
 	return 0;
 }
 void display()
