@@ -1,123 +1,61 @@
 #pragma once
+#include <cmath>
 
 namespace Utils
 {
-	bool static useOptimised = false;
-	unsigned static int g_maxIterations = 500;
-	const static int g_SCREEN_WIDTH = 1000;
-	const static int g_SCREEN_HEIGHT = 1000;
+	const static bool useOptimised = false;
+	const static bool useVec2 = true;
+	const static bool skipOnlyBlack = false;
+	const static unsigned int maxIterations = 100;
+	const static int SCREEN_WIDTH = 1280;
+	const static int SCREEN_HEIGHT = 720;
 
-	//enum InputState
-	//{
-	//	INPUT_UP = 1,
-	//	INPUT_DOWN = 2,
-	//	INPUT_UP_FIRST = 3,
-	//	INPUT_DOWN_FIRST = 4,
-	//};
+	static unsigned int skipNum = 0;
 
-	////Mouse Input
-	//InputState MouseState[3];
-	//static int g_mousePosX = 0;
-	//static int g_mousePosY = 0;
-	//static int g_mousePosDifX = 0;
-	//static int g_mousePosDifY = 0;
+	static double leftBorder = -2.0, rightBorder = 1.0, topBorder = 1.20, bottomBorder = -1.2;
 
-	//void MouseClick(int _button, int _state, int _x, int _y)
-	//{
-	//	if (_button >= 3)
-	//		return;
-	//	g_mousePosDifX = _x - g_mousePosX;
-	//	g_mousePosDifY = _y - g_mousePosY;
-	//	g_mousePosX = _x;
-	//	g_mousePosY = _y;
-	//	
-	//	MouseState[_button] = (GLUT_DOWN == _state) ? INPUT_DOWN : INPUT_UP;
-	//	//std::cout << "Mouse clicked on - x: " << _x << " | y: " << _y << std::endl;
-	//}
+	struct Pixel
+	{
+		unsigned char r;
+		unsigned char g;
+		unsigned char b;
+		unsigned char a;
 
-	//void MousePassiveMove(int _x, int _y)
-	//{
-	//	g_mousePosDifX = _x - g_mousePosX;
-	//	g_mousePosDifY = _y - g_mousePosY;
-	//	g_mousePosX = _x;
-	//	g_mousePosY = _y;
-	//	std::cout << "Mouse moved to - x: " << _x << " | y: " << _y << std::endl;
-	//	std::cout << "Mouse change in - x: " << g_mousePosDifX << " | y: " << g_mousePosDifY << std::endl;
-	//}
+		bool operator==(const Pixel &other) const
+		{
+			return (r == other.r
+				&& g == other.g
+				&& b == other.b
+				&& a == other.a);
+		}
+	};
 
-	//void MouseMove(int _x, int _y)
-	//{
-	//	g_mousePosDifX = _x - g_mousePosX;
-	//	g_mousePosDifY = _y - g_mousePosY;
-	//	g_mousePosX = _x;
-	//	g_mousePosY = _y;
-	//	//std::cout << "Mouse clicked on - x: " << _x << " | y: " << _y << std::endl;
-	//	//std::cout << "Mouse change in - x: " << g_mousePosDifX << " | y: " << g_mousePosDifY << std::endl;
-	//}
-	//
+	//Array of pixels that is made into a texture
+	static Utils::Pixel pixelData[Utils::SCREEN_HEIGHT][Utils::SCREEN_WIDTH];
 
-	////Keyboard input
-	//InputState KeyState[255];
-	//InputState SpecialKeyState[255];
-	//const int inputNum = 8;
-	//unsigned char inputs[inputNum] = { 'w', 'a', 's', 'd', 'W', 'A', 'S', 'D' };
+	struct Vec2
+	{
+		//This vec2 will be treated as a complex number for the mandlebrot calculation
+		//Using a vec2 instead of std::complex increases performance considerably
+		double x = 0.0;
+		double y = 0.0;
 
-	//void KeyBoardUp(unsigned char _key, int _x, int _y)
-	//{
-	//	InputState tempState = KeyState[_key];
-	//	int offset = (_key < 97) ? 32 : -32;
+		Vec2(double a, double b)
+		{
+			x = a;
+			y = b;
+		}
 
-	//	if(tempState != INPUT_UP && tempState != INPUT_UP_FIRST)
-	//	{
-	//		for (int i = 0; i < inputNum; ++i)
-	//		{
-	//			if (_key == inputs[i])
-	//			{
-	//				KeyState[_key + offset] = INPUT_UP_FIRST;
-	//				break;
-	//			}
-	//		}
-	//		KeyState[_key] = INPUT_UP_FIRST;
-	//	}
-	//}
+		Vec2 operator+(const Vec2 _other) const
+		{
+			return Vec2(x + _other.x, y + _other.y);
+		}
 
-	//void KeyBoardDown(unsigned char _key, int _x, int _y)
-	//{
-	//	InputState tempState = KeyState[_key];
-	//	int offset = (_key < 97) ? 32 : -32;
-
-	//	if (tempState != INPUT_DOWN && tempState != INPUT_DOWN_FIRST)
-	//	{
-	//		for (int i = 0; i < inputNum; ++i)
-	//		{
-	//			if (_key == inputs[i])
-	//			{
-	//				KeyState[_key + offset] = INPUT_DOWN_FIRST;
-	//				break;
-	//			}
-	//		}
-	//		KeyState[_key] = INPUT_DOWN_FIRST;
-	//	}
-	//}
-
-	////Special key up function
-	//void SpecialKeyBoardUp(int _key, int _x, int _y)
-	//{
-	//	InputState tempState = SpecialKeyState[_key];
-	//	if (tempState != INPUT_UP && tempState != INPUT_UP_FIRST)
-	//	{
-	//		SpecialKeyState[_key] = INPUT_UP_FIRST;
-	//	}
-	//}
-	//
-	////Special key down function
-	//void SpecialKeyBoardDown(int _key, int _x, int _y)
-	//{
-	//	InputState tempState = SpecialKeyState[_key];
-
-	//	if (tempState != INPUT_DOWN && tempState != INPUT_DOWN_FIRST)
-	//	{
-	//		SpecialKeyState[_key] = INPUT_DOWN_FIRST;
-	//	}
-	//}
+		//Finds the absolute distance of the complex number from the origin
+		double absDist() const
+		{
+			//The magnitude of a complex vector is its distance from the origin in the imaginary plane
+			return sqrt(x * x + y * y);
+		}
+	};
 }
