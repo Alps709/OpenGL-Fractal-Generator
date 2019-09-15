@@ -39,6 +39,45 @@ struct Pixel
 	}
 };
 
+struct Vec2
+{
+	//This vec2 will be treated as a complex number for the mandlebrot calculation
+	//Using a vec2 instead of std::complex increases performance considerably
+	double x = 0.0;
+	double y = 0.0;
+
+	Vec2(double a, double b)
+	{
+		x = a;
+		y = b;
+	}
+
+	bool operator<(const Vec2 _other) const
+	{
+		if(x < _other.x)
+		{
+			return true;
+		}
+		if(x == _other.x)
+		{
+			return y < _other.y;
+		}
+		return false;
+	}
+
+	Vec2 operator+(const Vec2 _other) const
+	{
+		return Vec2(x + _other.x,y + _other.y);
+	}
+
+	//Finds the absolute distance of the complex number from the origin
+	double absDist()
+	{
+		//The magnitude of a complex vector is its distance from the origin in the imaginary plane
+		return sqrt(x * x + y * y);
+	}
+};
+
 //Array of pixels that is made into a texture
 Pixel pixelData[Utils::g_SCREEN_HEIGHT][Utils::g_SCREEN_WIDTH];
 
@@ -76,20 +115,22 @@ int main(int argc, char** argv)
 	
 	//threadPool.Start();
 
+	unsigned int skipNum = 0;
+	//for (int i = 0; i < Utils::g_SCREEN_HEIGHT; i++)
+	//{
+	//	threadPool.Submit(calcMandelbrotOptimised, true, false, skipNum, -2.0, 1.0, 1.20, -1.2);
+	//}
 	//Create for loop iterating over the height of the window
 	//Create a task that passes in the y/height value of the loop and sumbit it to the threadpool
 	//Have the task functor take in a y value and compute the mandlebrot function for a single row of pixels
 	//have the task functor write directly to the pixel array
 	
-	
-	unsigned int skipNum = 0;
-
 	myClock.Initialise();
 	calcMandelbrotOptimised(true, false, skipNum, -2.0, 1.0, 1.20, -1.2);
 	myClock.Process();
 
 	std::cout << "\n\nIt took " << myClock.GetDeltaTick() << " milliseconds to calculate the mandlebrot fractal,"
-		<< "\nwhen skipping all similar pixels and using glm::vec2.\n\n";
+			  << "\nwhen skipping all similar pixels and using glm::vec2.\n\n";
 	std::cout << "Number of checks skipped: " << skipNum << std::endl;
 
 	myFractalMesh = new Mesh(Objects::vertices1, Objects::indices1);
@@ -158,8 +199,8 @@ void calcMandelbrotOptimised(bool _useVec2, bool _skipOnlyBlack, unsigned int& _
 						//Check if the pixels above, below, _leftBorder and _rightBorder are the same colour as the current pixel
 						if (pixelData[y + 1][x] == tempPix && pixelData[y][x - 1] == tempPix && pixelData[y][x + 1] == tempPix)
 						{
-							//The the 4 surrounding orthogonal pixels are the same colour
-							//Then the current pixel must also be that colour and no calculation is needed
+							//Check whether the 4 surrounding orthogonally adjacent pixels are the same colour
+							//If they are, then the current pixel must also be that colour and no calculation is needed
 							pixelData[y][x] = tempPix;
 							//Counts number of skipped pixel calculations
 							_skipNum++;
@@ -171,8 +212,8 @@ void calcMandelbrotOptimised(bool _useVec2, bool _skipOnlyBlack, unsigned int& _
 						//Check if the pixels above, below, _leftBorder and _rightBorder are the same colour as the current pixel
 						if (pixelData[y - 1][x] == black || pixelData[y + 1][x] == black && pixelData[y][x - 1] == black && pixelData[y][x + 1] == black)
 						{
-							//The the 4 surrounding orthogonal pixels are the same colour
-							//Then the current pixel must also be that colour and no calculation is needed
+							//Check whether the 4 surrounding orthogonally adjacent pixels are the same colour
+							//If they are, then the current pixel must also be that colour and no calculation is needed
 							pixelData[y][x] = black;
 							//Counts number of skipped pixel calculations
 							_skipNum++;
@@ -188,20 +229,18 @@ void calcMandelbrotOptimised(bool _useVec2, bool _skipOnlyBlack, unsigned int& _
 				{
 					// Work out the point in the complex plane that
 					// corresponds to this pixel in the output image.
-					glm::vec2 c(_leftBorder + (x * (_rightBorder - _leftBorder) / width),
+					Vec2 c(_leftBorder + (x * (_rightBorder - _leftBorder) / width),
 						_topBorder + (y * (_bottomBorder - _topBorder) / height));
 
 					// Start off z at (0, 0).
-					glm::vec2 z(0.0, 0.0);
+					Vec2 z(0.0, 0.0);
 
-					// Iterate z = z^2 + c until z moves more than 2 units
-					// away from (0, 0), or we've iterated too many times.
-					while (iterations < MAX_ITERATIONS)
+					// Iterate z = z^2 + c until either z moves more than 2 units
+					// away from (0, 0) in the imaginary plane, or we've iterated too many times.
+					while (z.absDist() < 2.0 && iterations < MAX_ITERATIONS)
 					{
 						//z = z^2 + c
-						z = glm::vec2(z.x * z.x - z.y * z.y, 2 * z.x * z.y) + c;
-
-						if (glm::dot(z, z) > B) break;
+						z = Vec2(z.x * z.x - z.y * z.y, 2 * z.x * z.y) + c;
 
 						++iterations;
 					}
@@ -228,17 +267,17 @@ void calcMandelbrotOptimised(bool _useVec2, bool _skipOnlyBlack, unsigned int& _
 
 				if (iterations == MAX_ITERATIONS)
 				{
-					//Max iterations was hit so say the pixel is in the set
+					//Max iterations was hit so we can say the pixel is in the set
 					pixelData[y][x] = black;
 				}
 				else
 				{
 					//Set pixel colour based on number of iterations
-					// z escaped within less than MAX_ITERATIONS
-					// iterations. This point isn't in the set.
-					pixelData[y][x].r = 255;
-					pixelData[y][x].g = unsigned char(sin(iterations) * 255);
-					pixelData[y][x].b = unsigned char(cos(iterations) * 255);
+					//Z didn't escape and we didn't hit the max amount of iterations
+					//so this pixel isn't in the set
+					pixelData[y][x].r = unsigned char((sin(iterations) * 255) / 2 + 0.75);
+					pixelData[y][x].g = unsigned char((cos(iterations) * 255) / 2 + 0.75);
+					pixelData[y][x].b = 255;
 					pixelData[y][x].a = 255;
 				}
 			}
