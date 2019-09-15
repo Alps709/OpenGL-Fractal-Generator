@@ -71,7 +71,7 @@ struct Vec2
 	}
 
 	//Finds the absolute distance of the complex number from the origin
-	double absDist()
+	double absDist() const
 	{
 		//The magnitude of a complex vector is its distance from the origin in the imaginary plane
 		return sqrt(x * x + y * y);
@@ -184,7 +184,7 @@ void calcMandelbrotOptimised(bool _useVec2, bool _skipOnlyBlack, unsigned int& _
 	{
 		for (int y = 0; y < height; ++y)
 		{
-			//Use bitwise XOR with i and (y % 2) as the inputs, 
+			//Use bitwise XOR with i and (y % 2) as the inputs, to find the starting x pos 
 			//This makes it so the pixels are processed in a checkerboard pattern, with each i iteration processing a different colour of the checkerboard
 			//Having it processed in this pattern allows orthogonal checking of the pixels around the current pixel, on i's second iteration
 			//So that it can skip calculation of pixels if every pixel around the current one, has the same colour
@@ -193,13 +193,13 @@ void calcMandelbrotOptimised(bool _useVec2, bool _skipOnlyBlack, unsigned int& _
 				//Check if pixel is not on the outisde border
 				if (i == 1 && y > 0 && x > 0 && y < height - 1 && x < width - 1)
 				{
+					//Will skip pixels of any colours
 					if(!_skipOnlyBlack)
 					{
 						Pixel tempPix = pixelData[y - 1][x];
-						//Check if the pixels above, below, _leftBorder and _rightBorder are the same colour as the current pixel
+						//Check whether the 4 surrounding orthogonally adjacent pixels are the same colour
 						if (pixelData[y + 1][x] == tempPix && pixelData[y][x - 1] == tempPix && pixelData[y][x + 1] == tempPix)
 						{
-							//Check whether the 4 surrounding orthogonally adjacent pixels are the same colour
 							//If they are, then the current pixel must also be that colour and no calculation is needed
 							pixelData[y][x] = tempPix;
 							//Counts number of skipped pixel calculations
@@ -207,6 +207,7 @@ void calcMandelbrotOptimised(bool _useVec2, bool _skipOnlyBlack, unsigned int& _
 							continue;
 						}
 					}
+					//Will only skip pixels of the colour black (black being the pixel after max iterations have been calculated)
 					else
 					{
 						//Check if the pixels above, below, _leftBorder and _rightBorder are the same colour as the current pixel
