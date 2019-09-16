@@ -2,24 +2,29 @@
 #include <cmath>
 #include <fstream>
 #include <string>
+#include <thread>
+#include "ThreadPool.h"
 
 namespace Utils
 {
 	//This provides an optimization by using a custom vec2 instead of std::complex
-	const static bool useVec2 = true;
+	static bool useVec2 = true;
 
 	//This provides an optimization by setting a pixels colour based on the 4 orthogonally adjacent pixels each having the same colour
 	//and thereby skipping the costly calculations needed
-	const static bool skipPixels = true;
+	static bool skipPixels = true;
 
-	const static unsigned int maxIterations = 500;
+	static unsigned int maxIterations = 500;
+	static float currentIterationCount = 1;
+
+	static unsigned int threadNum = std::thread::hardware_concurrency();
 	
 	const static int SCREEN_WIDTH = 1280;
 	const static int SCREEN_HEIGHT = 720;
 
 	static unsigned int skipNum = 0;
 
-	static double leftBorder = -2.0, rightBorder = 1.0, topBorder = 1.20, bottomBorder = -1.2;
+	static long double leftBorder = -2.0, rightBorder = 1.0, topBorder = 1.20, bottomBorder = -1.2;
 
 	struct Pixel
 	{
@@ -66,17 +71,54 @@ namespace Utils
 		}
 	};
 
-	void LoadFile()
+	static void LoadFile()
 	{
 		std::string line;
 		std::ifstream configfile;
 		configfile.open("Config.txt");
 		if(configfile.is_open())
 		{
-			while(std::getline(configfile, line))
+			//Error checking of file reading
+			try 
 			{
-				
+				while(std::getline(configfile, line))
+				{
+					std::istringstream lineInput(line.substr(line.find(": ") + 1));
+					if(line.find("Thread count") != -1)
+					{
+						lineInput >> threadNum;
+					}
+					else if(line.find("Max iterations"))
+					{
+						lineInput >> maxIterations;
+					}
+					else if(line.find("Use vec2 optimization"))
+					{
+						unsigned int tempInt;
+						lineInput >> tempInt;
+						useVec2 = tempInt;
+					}
+					else if(line.find("Use pixel skipping optimization"))
+					{
+						unsigned int tempInt;
+						lineInput >> tempInt;
+						skipPixels = tempInt;
+					}
+				}
+			}
+			catch (...)
+			{
+				std::cout << "\n\n There was a problem reading the config file! Please make sure you changed only the numbers!\n\n";
+				system("pause");
+				exit(-1);
 			}
 		}
+
+		std::cout << "Loaded config file!\n\n"
+			<< "The program will use " << threadNum << " threads.\n"
+			<< "The max amount of iterations is set to " << maxIterations << ".\n"
+			<< "Using vec2 optimization: " << ((useVec2 == 1) ? "true\n" : "false\n")
+			<< "Using pixel skipping optimization: " << ((skipPixels == 1) ? "true\n" : "false\n");
+		system("pause");
 	}
 }
