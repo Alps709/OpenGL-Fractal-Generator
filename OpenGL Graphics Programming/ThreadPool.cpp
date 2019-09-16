@@ -45,9 +45,11 @@ void ThreadPool::DestroyInstance()
 	s_pThreadPool = 0;
 }
 
-
-void ThreadPool::Start()
+//This function is to only be called once per threadpool
+void ThreadPool::Start(int _threadNum)
 {
+	m_iNumberOfThreads = _threadNum;
+	m_workerThreads.clear();
 	for (unsigned int i = 0; i < m_iNumberOfThreads; i++)
 	{
 		m_workerThreads.push_back(std::thread(&ThreadPool::DoWork, this));

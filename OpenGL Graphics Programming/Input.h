@@ -1,6 +1,5 @@
 #pragma once
 #include "Utils.h"
-#include <freeglut.h>
 
 namespace Input
 {

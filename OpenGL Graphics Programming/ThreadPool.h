@@ -1,12 +1,10 @@
 #pragma once
 #ifndef __THREADPOOL_H__
 #define __THREADPOOL_H__
-#include <iostream>
 #include <vector>
 #include <thread>
 #include <atomic>
 #include <functional>
-#include <condition_variable>
 #include <future>
 
 #include "WorkQueue.h"
@@ -25,7 +23,7 @@ public:
 	std::future<std::result_of_t<Fun(Args...)>> Submit(Fun func, Args... args);
 
 	void DoWork();
-	void Start();
+	void Start(int _threadNum);
 	void Stop();
 	std::atomic_int& getItemsProcessed();
 

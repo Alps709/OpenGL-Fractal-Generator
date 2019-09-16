@@ -34,7 +34,10 @@ float EaseInOut(float t, float b, float c, float d);
 
 int main(int argc, char** argv)
 {
-	Utils::LoadFile();
+	//Load variables from config file
+	//Utils::LoadFile();
+	//Start the threadpool and give it the number of threads to use
+	threadPool.Start(Utils::threadNum);
 
 	//Setup and create at glut controlled window
 	glutInit(&argc, argv);
@@ -57,7 +60,6 @@ int main(int argc, char** argv)
 
 	SetGlobalGLSettings();
 	
-	threadPool.Start();
 	myClock.Initialise();
 
 	myFractalMesh = new Mesh(Objects::vertices1, Objects::indices1);

@@ -71,14 +71,14 @@ namespace Utils
 		}
 	};
 
-	static void LoadFile()
+	/*static void LoadFile()
 	{
 		std::string line;
 		std::ifstream configfile;
 		configfile.open("Config.txt");
 		if(configfile.is_open())
 		{
-			//Error checking of file reading
+			Error checking of file reading
 			try 
 			{
 				while(std::getline(configfile, line))
@@ -120,5 +120,5 @@ namespace Utils
 			<< "Using vec2 optimization: " << ((useVec2 == 1) ? "true\n" : "false\n")
 			<< "Using pixel skipping optimization: " << ((skipPixels == 1) ? "true\n" : "false\n");
 		system("pause");
-	}
+	}*/
 }
