@@ -55,6 +55,8 @@ int main(int argc, char** argv)
 	}
 
 	SetGlobalGLSettings();
+	std::cout << "Using " << std::thread::hardware_concurrency() << " threads." <<  std::endl;
+	system("pause");
 
 	threadPool.Start();
 	myClock.Initialise();
@@ -103,14 +105,14 @@ void display()
 		}
 	}
 
-	for (int i = 0; i < myFutures.size(); i++)
+	for (auto& myFuture : myFutures)
 	{
-		myFutures[i].get();
+		myFuture.get();
 	}
 	myClock.Process();
 
 	std::cout << "\n\nIt took " << myClock.GetDeltaTick() << " milliseconds to calculate the mandlebrot fractal,"
-		<< "\nwhen skipping all similar pixels and using glm::vec2.\n\n";
+			  << "\nwhen skipping all similar pixels and using glm::vec2.\n\n";
 	std::cout << "Number of checks skipped: " << Utils::skipNum << std::endl;
 
 	Texture myFractalTex = Texture(0, reinterpret_cast<unsigned char *>(Utils::pixelData));

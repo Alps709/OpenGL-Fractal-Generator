@@ -1,12 +1,19 @@
 #pragma once
 #include <cmath>
+#include <fstream>
+#include <string>
 
 namespace Utils
 {
-	const static bool useOptimised = false;
+	//This provides an optimization by using a custom vec2 instead of std::complex
 	const static bool useVec2 = true;
-	const static bool skipOnlyBlack = false;
-	const static unsigned int maxIterations = 100;
+
+	//This provides an optimization by setting a pixels colour based on the 4 orthogonally adjacent pixels each having the same colour
+	//and thereby skipping the costly calculations needed
+	const static bool skipPixels = true;
+
+	const static unsigned int maxIterations = 500;
+	
 	const static int SCREEN_WIDTH = 1280;
 	const static int SCREEN_HEIGHT = 720;
 
@@ -58,4 +65,18 @@ namespace Utils
 			return sqrt(x * x + y * y);
 		}
 	};
+
+	void LoadFile()
+	{
+		std::string line;
+		std::ifstream configfile;
+		configfile.open("Config.txt");
+		if(configfile.is_open())
+		{
+			while(std::getline(configfile, line))
+			{
+				
+			}
+		}
+	}
 }
