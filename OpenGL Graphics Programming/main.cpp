@@ -12,6 +12,7 @@
 #include "Texture.h"
 #include "clock.h"
 #include "Input.h"
+#include <fstream>
 
 ThreadPool& threadPool = ThreadPool::GetInstance();
 
@@ -28,14 +29,13 @@ void Update();
 void display();
 void SetGlobalGLSettings();
 void calcMandelbrotOY(int _i, int _y);
-void calcMandelbrotOptimised(double left, double right, double top, double bottom);
-void calcMandelbrot(double left, double right, double top, double bottom);
 float EaseInOut(float t, float b, float c, float d);
+static void LoadFile();
 
 int main(int argc, char** argv)
 {
 	//Load variables from config file
-	//Utils::LoadFile();
+	LoadFile();
 	//Start the threadpool and give it the number of threads to use
 	threadPool.Start(Utils::threadNum);
 
@@ -97,16 +97,19 @@ void display()
 	//Calculate the mandlebrot this frame
 	std::vector<std::future<void>> myFutures;
 	Utils::skipNum = 0;
+
+	//Start timer
 	myClock.Process();
 	for (int i = 0; i < 2; ++i)
 	{
+		//
 		for (int y = 0; y < Utils::SCREEN_HEIGHT; y++)
 		{
 			myFutures.push_back(threadPool.Submit(calcMandelbrotOY, i, y));
 		}
 	}
 	
-	if(Utils::currentIterationCount <= 1000)
+	if(Utils::currentIterationCount <= Utils::maxIterations)
 	{
 		Utils::currentIterationCount += 0.2f;
 	}
@@ -179,7 +182,7 @@ void calcMandelbrotOY(int _i, int _y)
 	// The number of times to iterate before we assume that a point isn't in the
 	// Mandelbrot set.
 	// (You may need to turn this up if you zoom further into the set.)
-	const unsigned int MAX_ITERATIONS = (unsigned int)Utils::currentIterationCount;
+	const unsigned int MAX_ITERATIONS = static_cast<unsigned int>(Utils::currentIterationCount);
 
 	const int height = Utils::SCREEN_HEIGHT;
 	const int width = Utils::SCREEN_WIDTH;
@@ -267,8 +270,8 @@ void calcMandelbrotOY(int _i, int _y)
 			//Set pixel colour based on number of iterations
 			//Z didn't escape and we didn't hit the max amount of iterations
 			//so this pixel isn't in the set
-			Utils::pixelData[_y][x].r = unsigned char(EaseInOut(100, 155, (float)sin(iterations) * 255, 255));
-			Utils::pixelData[_y][x].g = unsigned char(EaseInOut(100, 155, (float)cos(iterations) * 255, 255));
+			Utils::pixelData[_y][x].r = unsigned char(EaseInOut(100, 155, static_cast<float>(sin(iterations)) * 255, 255));
+			Utils::pixelData[_y][x].g = unsigned char(EaseInOut(100, 155, static_cast<float>(cos(iterations)) * 255, 255));
 			Utils::pixelData[_y][x].b = 255;
 			Utils::pixelData[_y][x].a = 255;
 		}
@@ -277,15 +280,13 @@ void calcMandelbrotOY(int _i, int _y)
 
 void ProcessInput()
 {
-	long double horizDif = fabs(Utils::rightBorder - Utils::leftBorder) * 0.05;
-	long double vertDif = fabs(Utils::topBorder - Utils::bottomBorder) * 0.05;
+	const long double horizDif = fabs(Utils::rightBorder - Utils::leftBorder) * 0.05;
+	const long double vertDif = fabs(Utils::topBorder - Utils::bottomBorder) * 0.05;
 	
 	//Keyboard input
 	//Move the camera forward with the w button
-	if (
-		Input::KeyState['w'] == Input::INPUT_DOWN || Input::KeyState['w'] == Input::INPUT_DOWN_FIRST ||
-		Input::KeyState['W'] == Input::INPUT_DOWN || Input::KeyState['W'] == Input::INPUT_DOWN_FIRST
-		)
+	if (Input::KeyState['w'] == Input::INPUT_DOWN || Input::KeyState['w'] == Input::INPUT_DOWN_FIRST ||
+		Input::KeyState['W'] == Input::INPUT_DOWN || Input::KeyState['W'] == Input::INPUT_DOWN_FIRST)
 	{
 		//move fractal down
 		Utils::topBorder += vertDif;
@@ -299,10 +300,8 @@ void ProcessInput()
 		Input::KeyState['W'] = Input::INPUT_DOWN;
 	}
 	//Move the camera to the left with the a button
-	if (
-		Input::KeyState['a'] == Input::INPUT_DOWN || Input::KeyState['a'] == Input::INPUT_DOWN_FIRST ||
-		Input::KeyState['A'] == Input::INPUT_DOWN || Input::KeyState['A'] == Input::INPUT_DOWN_FIRST
-		)
+	if (Input::KeyState['a'] == Input::INPUT_DOWN || Input::KeyState['a'] == Input::INPUT_DOWN_FIRST ||
+		Input::KeyState['A'] == Input::INPUT_DOWN || Input::KeyState['A'] == Input::INPUT_DOWN_FIRST)
 	{
 		//move fractal to the right
 		Utils::leftBorder -= horizDif;
@@ -313,10 +312,8 @@ void ProcessInput()
 		Input::KeyState['A'] = Input::INPUT_DOWN;
 	}
 	//Move the camera backwards with the s button
-	if (
-		Input::KeyState['s'] == Input::INPUT_DOWN || Input::KeyState['s'] == Input::INPUT_DOWN_FIRST ||
-		Input::KeyState['S'] == Input::INPUT_DOWN || Input::KeyState['S'] == Input::INPUT_DOWN_FIRST
-		)
+	if (Input::KeyState['s'] == Input::INPUT_DOWN || Input::KeyState['s'] == Input::INPUT_DOWN_FIRST ||
+		Input::KeyState['S'] == Input::INPUT_DOWN || Input::KeyState['S'] == Input::INPUT_DOWN_FIRST)
 	{
 		//move fractal up
 		Utils::topBorder -= vertDif;
@@ -327,10 +324,8 @@ void ProcessInput()
 		Input::KeyState['S'] = Input::INPUT_DOWN;
 	}
 	//Move the camera to the right witht the d button
-	if (
-		Input::KeyState['d'] == Input::INPUT_DOWN || Input::KeyState['d'] == Input::INPUT_DOWN_FIRST ||
-		Input::KeyState['D'] == Input::INPUT_DOWN || Input::KeyState['D'] == Input::INPUT_DOWN_FIRST
-		)
+	if (Input::KeyState['d'] == Input::INPUT_DOWN || Input::KeyState['d'] == Input::INPUT_DOWN_FIRST ||
+		Input::KeyState['D'] == Input::INPUT_DOWN || Input::KeyState['D'] == Input::INPUT_DOWN_FIRST)
 	{
 		//move fractal to the left
 		Utils::leftBorder += horizDif;
@@ -364,4 +359,78 @@ void ProcessInput()
 		//The key is has now been processed for a frame, so set it to the appropriate state
 		Input::SpecialKeyState[GLUT_KEY_SHIFT_L] = Input::INPUT_DOWN;
 	}
+}
+
+static void LoadFile()
+{
+	std::string line;
+	std::ifstream configfile;
+	configfile.open("Config/Config.txt");
+
+	if(configfile.fail())
+	{
+		std::cout << "Failed to open the config file!";
+		system("pause");
+		exit(-1);
+	}
+
+	if(configfile.is_open())
+	{
+		//Error checking of file reading
+		try
+		{
+			while(std::getline(configfile, line))
+			{
+				std::istringstream lineInput(line.substr(line.find(": ") + 1));
+				if(line.find("Thread count") != -1)
+				{
+					lineInput >> Utils::threadNum;
+
+					if (Utils::threadNum > std::thread::hardware_concurrency())
+					{
+						Utils::threadNum = std::thread::hardware_concurrency();
+						std::cout << "The number of threads you declared in the config file was more than what the hardware supports."
+							<< "\nThe number of threads will be set to the max amount of logical threads the hardware actually supports.\n";
+					}
+				}
+				else if(line.find("Max iterations") != -1)
+				{
+					lineInput >> Utils::maxIterations;
+
+					if(Utils::maxIterations > 1000)
+					{
+						Utils::maxIterations = 1000;
+						std::cout << "\n\nThe Max iteration count you set was too high."
+								  << "\nThe number of iterations will be set to 1000,\n" 
+								  << "as anything higher will be unseeable because of the 32 bit floating point precision limits.\n";
+					}
+				}
+				else if(line.find("Use vec2 optimization") != -1)
+				{
+					unsigned int tempInt;
+					lineInput >> tempInt;
+					Utils::useVec2 = tempInt;
+				}
+				else if(line.find("Use pixel skipping optimization") != -1)
+				{
+					unsigned int tempInt;
+					lineInput >> tempInt;
+					Utils::skipPixels = tempInt;
+				}
+			}
+		}
+		catch (...)
+		{
+			std::cout << "\n\n There was a problem reading the config file! Please make sure you changed only the numbers!\n\n";
+			system("pause");
+			exit(-1);
+		}
+	}
+
+	std::cout << "Loaded config file!\n\n"
+		<< "The program will use " << Utils::threadNum << " threads.\n"
+		<< "The max amount of iterations is set to " << Utils::maxIterations << ".\n"
+		<< "Using vec2 optimization: " << ((Utils::useVec2 == 1) ? "true\n" : "false\n")
+		<< "Using pixel skipping optimization: " << ((Utils::skipPixels == 1) ? "true\n" : "false\n");
+	system("pause");
 }
