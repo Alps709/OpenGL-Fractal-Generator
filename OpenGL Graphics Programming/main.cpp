@@ -16,6 +16,8 @@
 
 ThreadPool& threadPool = ThreadPool::GetInstance();
 
+bool testFirstFrame = true;
+
 CClock myClock;
 long long u_currentTime = 0;
 
@@ -59,7 +61,7 @@ int main(int argc, char** argv)
 	}
 
 	SetGlobalGLSettings();
-	
+
 	myClock.Initialise();
 
 	myFractalMesh = new Mesh(Objects::vertices1, Objects::indices1);
@@ -96,38 +98,60 @@ void display()
 {
 	//Calculate the mandlebrot this frame
 	std::vector<std::future<void>> myFutures;
-	Utils::skipNum = 0;
 
-	//Start timer
-	myClock.Process();
-	for (int i = 0; i < 2; ++i)
+	//Use maxIterations for the first test
+	if(testFirstFrame)
 	{
-		//
-		for (int y = 0; y < Utils::SCREEN_HEIGHT; y++)
+		//Calculate full mandlebrot image at max iterations to test performance
+		//Start timer
+		myClock.Process();
+		for (int i = 0; i < 2; ++i)
 		{
-			myFutures.push_back(threadPool.Submit(calcMandelbrotOY, i, y));
+			//
+			for (int y = 0; y < Utils::SCREEN_HEIGHT; y++)
+			{
+				myFutures.push_back(threadPool.Submit(calcMandelbrotOY, i, y));
+			}
 		}
+		//Make sure the threads have finished with the mandlebrot calculation before sending the pixel data to the texture
+		for (auto& myFuture : myFutures)
+		{
+			myFuture.get();
+		}
+		myClock.Process();
 	}
-	
-	if(Utils::currentIterationCount <= Utils::maxIterations)
+	else
 	{
-		Utils::currentIterationCount += 0.2f;
+		//Start timer
+		myClock.Process();
+		for (int i = 0; i < 2; ++i)
+		{
+			//
+			for (int y = 0; y < Utils::SCREEN_HEIGHT; y++)
+			{
+				myFutures.push_back(threadPool.Submit(calcMandelbrotOY, i, y));
+			}
+		}
+
+		if (Utils::currentIterationCount <= Utils::maxIterations)
+		{
+			Utils::currentIterationCount += 0.2f;
+		}
+
+		//Make sure the threads have finished with the mandlebrot calculation before sending the pixel data to the texture
+		for (auto& myFuture : myFutures)
+		{
+			myFuture.get();
+		}
+		myClock.Process();
 	}
-
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
-
-	myFractalShader->Bind();
-
-	//Make sure the threads have finished with the mandlebrot calculation before sending the pixel data to the texture
-	for (auto& myFuture : myFutures)
-	{
-		myFuture.get();
-	}
-	myClock.Process();
 
 	system("cls");
 	std::cout << "FPS: " << 1000.0f / myClock.GetDeltaTick();
+
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	myFractalShader->Bind();
 	
 	Texture myFractalTex = Texture(0, reinterpret_cast<unsigned char *>(Utils::pixelData));
 	myFractalTex.Bind();
@@ -141,6 +165,15 @@ void display()
 	Shader::Unbind();
 
 	glutSwapBuffers();
+
+	if(testFirstFrame)
+	{
+		std::cout << "\nIt took " << myClock.GetDeltaTick()
+			<< " milliseconds to calculate the full mandlebrot fractal with "
+			<< Utils::maxIterations << " iterations.\n";
+		system("pause");
+		testFirstFrame = false;
+	}
 }
 
 float EaseInOut(float t, float b, float c, float d)
@@ -182,7 +215,7 @@ void calcMandelbrotOY(int _i, int _y)
 	// The number of times to iterate before we assume that a point isn't in the
 	// Mandelbrot set.
 	// (You may need to turn this up if you zoom further into the set.)
-	const unsigned int MAX_ITERATIONS = static_cast<unsigned int>(Utils::currentIterationCount);
+	const unsigned int MAX_ITERATIONS = (testFirstFrame) ? static_cast<unsigned int>(Utils::maxIterations) : static_cast<unsigned int>(Utils::currentIterationCount);
 
 	const int height = Utils::SCREEN_HEIGHT;
 	const int width = Utils::SCREEN_WIDTH;
