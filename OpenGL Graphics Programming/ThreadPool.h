@@ -68,5 +68,4 @@ ThreadPool::Submit(Fun func, Args... args)
 	m_unqpWorkQueue->push(std::move(task));
 	return f;
 }
-
 #endif
