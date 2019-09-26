@@ -1,5 +1,5 @@
 Thread count: 8
-Max iterations: 5000
+Max iterations: 100
 Use vec2 optimization: 1
 Use pixel skipping optimization: 1
 

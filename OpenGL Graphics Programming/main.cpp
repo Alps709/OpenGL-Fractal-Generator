@@ -79,7 +79,6 @@ int main(int argc, char** argv)
 	glutDisplayFunc(display);
 	glutIdleFunc(Update);
 	glutMainLoop();
-
 	delete myFractalMesh;
 	delete myFractalShader;
 	return 0;
@@ -101,13 +100,16 @@ void display()
 
 	//Use maxIterations for the first test
 	if(testFirstFrame)
-	{
 		//Calculate full mandlebrot image at max iterations to test performance
+	{
 		//Start timer
 		myClock.Process();
+
+		//Do two passes on calculating the image data, this calculates the colour of every second pixel on the x axis, so the calculations are done in a checker board fashion
+		//(first i calculates the black squares of the checkerboard, second i iterates over the white squares), this allows for the pixel skipping optimization
 		for (int i = 0; i < 2; ++i)
 		{
-			//
+			//Create a task to calculate each row of pixels for the texture
 			for (int y = 0; y < Utils::SCREEN_HEIGHT; y++)
 			{
 				myFutures.push_back(threadPool.Submit(calcMandelbrotOY, i, y));
@@ -121,18 +123,23 @@ void display()
 		myClock.Process();
 	}
 	else
+		//Have iterations increase over time for the awesome animated texture
 	{
 		//Start timer
 		myClock.Process();
+
+		//Do two passes on calculating the image data, this calculates the colour of every second pixel on the x axis, so the calculations are done in a checker board fashion
+		//(first i calculates the black squares of the checkerboard, second i iterates over the white squares), this allows for the pixel skipping optimization
 		for (int i = 0; i < 2; ++i)
 		{
-			//
+			////Create a task to calculate each row of pixels for the texture
 			for (int y = 0; y < Utils::SCREEN_HEIGHT; y++)
 			{
 				myFutures.push_back(threadPool.Submit(calcMandelbrotOY, i, y));
 			}
 		}
 
+		//Increase the iterations every 5 frames so it gives a cool animation
 		if (Utils::currentIterationCount <= Utils::maxIterations)
 		{
 			Utils::currentIterationCount += 0.2f;
@@ -143,6 +150,8 @@ void display()
 		{
 			myFuture.get();
 		}
+
+		//End timer
 		myClock.Process();
 	}
 
@@ -169,8 +178,8 @@ void display()
 	if(testFirstFrame)
 	{
 		std::cout << "\nIt took " << myClock.GetDeltaTick()
-			<< " milliseconds to calculate the full mandlebrot fractal with "
-			<< Utils::maxIterations << " iterations.\n";
+				  << " milliseconds to calculate the full mandlebrot fractal with "
+				  << Utils::maxIterations << " iterations.\n";
 		system("pause");
 		testFirstFrame = false;
 	}
@@ -182,7 +191,7 @@ float EaseInOut(float t, float b, float c, float d)
 	//b = start value, the starting value of the lerp (the offset from 0)
 	//c = current value, of the thing you want to lerp
 	//d = Max of current value, or the max range of the variable to want to lerp
-	// currentValue * (max - offset)/currentIterationCount + offset
+	// currentValue * (range of lerp)/currentIterationCount + offset
 	return c * t / d + b;
 }
 
@@ -212,9 +221,7 @@ void SetGlobalGLSettings()
 //Mandlebrot function with optimizations that runs concurrently on multiple threads
 void calcMandelbrotOY(int _i, int _y)
 {
-	// The number of times to iterate before we assume that a point isn't in the
-	// Mandelbrot set.
-	// (You may need to turn this up if you zoom further into the set.)
+	//The max number of times it will iterate before assuming the pixel is in the set
 	const unsigned int MAX_ITERATIONS = (testFirstFrame) ? static_cast<unsigned int>(Utils::maxIterations) : static_cast<unsigned int>(Utils::currentIterationCount);
 
 	const int height = Utils::SCREEN_HEIGHT;
@@ -254,17 +261,16 @@ void calcMandelbrotOY(int _i, int _y)
 		}
 
 		unsigned int iterations = 0;
+		//Check if it is using the vec2 optimization
 		if (Utils::useVec2)
 		{
-			// Work out the point in the complex plane that
-			// corresponds to this pixel in the output image.
+			//Find the point in the complex plane that aligns with the current pixel
 			const Utils::Vec2 complexPoint(leftBorder + (x * complexPointPt1), complexPointPt2);
 
-			// Start off z at (0, 0).
 			Utils::Vec2 z(0.0, 0.0);
 
-			// Iterate z = z^2 + c until either z moves more than 2 units
-			// away from (0, 0) in the imaginary plane, or we've iterated too many times.
+			//Times the z value by itself as many times as there are iterations, 
+			//if the value is greater than 2, then it has moved m
 			while (z.absDist() < 2.0 && iterations < MAX_ITERATIONS)
 			{
 				//z = z^2 + c
@@ -274,12 +280,11 @@ void calcMandelbrotOY(int _i, int _y)
 			}
 		}
 		else
+			//Use std::complex instead of vec2 (this has significant performance reductions)
 		{
-			// Work out the point in the complex plane that
-			// corresponds to this pixel in the output image.
+			//Find the point in the complex plane that aligns with the current pixel
 			std::complex<double> complexPoint(Utils::leftBorder + (x * (Utils::rightBorder - Utils::leftBorder) / width),
-				Utils::topBorder + (_y * (Utils::bottomBorder - Utils::topBorder) / height));
-
+											  Utils::topBorder + (_y * (Utils::bottomBorder - Utils::topBorder) / height));
 			// Start off z at (0, 0).
 			std::complex<double> z(0.0, 0.0);
 
@@ -425,6 +430,12 @@ static void LoadFile()
 						std::cout << "The number of threads you declared in the config file was more than what the hardware supports."
 							<< "\nThe number of threads will be set to the max amount of logical threads the hardware actually supports.\n";
 					}
+					if (Utils::threadNum <= 0)
+					{
+						std::cout << "\n\nThere was a problem reading the config file! Please make sure you changed only the numbers!\n\n";
+						system("pause");
+						exit(-1);
+					}
 				}
 				else if(line.find("Max iterations") != -1)
 				{
@@ -436,6 +447,12 @@ static void LoadFile()
 						std::cout << "\n\nThe Max iteration count you set was too high."
 								  << "\nThe number of iterations will be set to 1000,\n" 
 								  << "as anything higher will be unseeable because of the 32 bit floating point precision limits.\n";
+					}
+					if (Utils::maxIterations <= 0)
+					{
+						std::cout << "\n\nThere was a problem reading the config file! Please make sure you changed only the numbers!\n\n";
+						system("pause");
+						exit(-1);
 					}
 				}
 				else if(line.find("Use vec2 optimization") != -1)
@@ -454,7 +471,7 @@ static void LoadFile()
 		}
 		catch (...)
 		{
-			std::cout << "\n\n There was a problem reading the config file! Please make sure you changed only the numbers!\n\n";
+			std::cout << "\n\nThere was a problem reading the config file! Please make sure you changed only the numbers!\n\n";
 			system("pause");
 			exit(-1);
 		}
