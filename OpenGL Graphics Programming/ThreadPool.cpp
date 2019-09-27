@@ -59,6 +59,7 @@ void ThreadPool::Start(int _threadNum)
 void ThreadPool::Stop()
 {
 	m_finished = true;
+	DestroyInstance();
 }
 
 void ThreadPool::DoWork()

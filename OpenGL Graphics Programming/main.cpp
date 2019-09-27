@@ -38,6 +38,7 @@ int main(int argc, char** argv)
 {
 	//Load variables from config file
 	LoadFile();
+
 	//Start the threadpool and give it the number of threads to use
 	threadPool.Start(Utils::threadNum);
 
@@ -79,6 +80,9 @@ int main(int argc, char** argv)
 	glutDisplayFunc(display);
 	glutIdleFunc(Update);
 	glutMainLoop();
+
+	//Cleanup
+	threadPool.Stop();
 	delete myFractalMesh;
 	delete myFractalShader;
 	return 0;
