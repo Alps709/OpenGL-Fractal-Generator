@@ -3,6 +3,8 @@ A C++ program that renders fractals using OpenGL.
 The program generates the image data using CPU multi-threading,
 it then creates a texture from the image data and draws the texture onto a quad using OpenGL.
 
+A video of the program can be seen here: https://www.youtube.com/watch?v=Ofb5bC0LnsQ
+
 The program starts by showing if the config file was loaded properly,
 and if it was, it shows the loaded values the program will use. 
 (An explanation for each config value is explained that the bottom)
