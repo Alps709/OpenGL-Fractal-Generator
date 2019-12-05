@@ -71,10 +71,10 @@ int main(int argc, char** argv)
 
 	///Input function callbacks
 	//KeyBoard
-	glutKeyboardFunc(Input::KeyBoardDown);
-	glutKeyboardUpFunc(Input::KeyBoardUp);
-	glutSpecialFunc(Input::SpecialKeyBoardDown);
-	glutSpecialUpFunc(Input::SpecialKeyBoardUp);
+	glutKeyboardFunc(::KeyBoardDown);
+	glutKeyboardUpFunc(::KeyBoardUp);
+	glutSpecialFunc(::SpecialKeyBoardDown);
+	glutSpecialUpFunc(::SpecialKeyBoardUp);
 
 	//Game loop functions
 	glutDisplayFunc(display);
@@ -328,8 +328,8 @@ void ProcessInput()
 	
 	//Keyboard input
 	//Move the camera forward with the w button
-	if (Input::KeyState['w'] == Input::INPUT_DOWN || Input::KeyState['w'] == Input::INPUT_DOWN_FIRST ||
-		Input::KeyState['W'] == Input::INPUT_DOWN || Input::KeyState['W'] == Input::INPUT_DOWN_FIRST)
+	if (inputManager.KeyState['w'] == inputManager.INPUT_DOWN || inputManager.KeyState['w'] == inputManager.INPUT_DOWN_FIRST ||
+		inputManager.KeyState['W'] == inputManager.INPUT_DOWN || inputManager.KeyState['W'] == inputManager.INPUT_DOWN_FIRST)
 	{
 		//move fractal down
 		Utils::topBorder += vertDif;
@@ -339,47 +339,47 @@ void ProcessInput()
 		//std::cout << "Camera pos: x: " << myCamera->GetPosition().x << " y: " << myCamera->GetPosition().y << " z: " << myCamera->GetPosition().z  << std::endl;
 
 		//The key is has now been processed for a frame, so set it to the appropriate state
-		Input::KeyState['w'] = Input::INPUT_DOWN;
-		Input::KeyState['W'] = Input::INPUT_DOWN;
+		inputManager.KeyState['w'] = inputManager.INPUT_DOWN;
+		inputManager.KeyState['W'] = inputManager.INPUT_DOWN;
 	}
 	//Move the camera to the left with the a button
-	if (Input::KeyState['a'] == Input::INPUT_DOWN || Input::KeyState['a'] == Input::INPUT_DOWN_FIRST ||
-		Input::KeyState['A'] == Input::INPUT_DOWN || Input::KeyState['A'] == Input::INPUT_DOWN_FIRST)
+	if (inputManager.KeyState['a'] == inputManager.INPUT_DOWN || inputManager.KeyState['a'] == inputManager.INPUT_DOWN_FIRST ||
+		inputManager.KeyState['A'] == inputManager.INPUT_DOWN || inputManager.KeyState['A'] == inputManager.INPUT_DOWN_FIRST)
 	{
 		//move fractal to the right
 		Utils::leftBorder -= horizDif;
 		Utils::rightBorder -= horizDif;
 
 		//The key is has now been processed for a frame, so set it to the appropriate state
-		Input::KeyState['a'] = Input::INPUT_DOWN;
-		Input::KeyState['A'] = Input::INPUT_DOWN;
+		inputManager.KeyState['a'] = inputManager.INPUT_DOWN;
+		inputManager.KeyState['A'] = inputManager.INPUT_DOWN;
 	}
 	//Move the camera backwards with the s button
-	if (Input::KeyState['s'] == Input::INPUT_DOWN || Input::KeyState['s'] == Input::INPUT_DOWN_FIRST ||
-		Input::KeyState['S'] == Input::INPUT_DOWN || Input::KeyState['S'] == Input::INPUT_DOWN_FIRST)
+	if (inputManager.KeyState['s'] == inputManager.INPUT_DOWN || inputManager.KeyState['s'] == inputManager.INPUT_DOWN_FIRST ||
+		inputManager.KeyState['S'] == inputManager.INPUT_DOWN || inputManager.KeyState['S'] == inputManager.INPUT_DOWN_FIRST)
 	{
 		//move fractal up
 		Utils::topBorder -= vertDif;
 		Utils::bottomBorder -= vertDif;
 
 		//The key is has now been processed for a frame, so set it to the appropriate state
-		Input::KeyState['s'] = Input::INPUT_DOWN;
-		Input::KeyState['S'] = Input::INPUT_DOWN;
+		inputManager.KeyState['s'] = inputManager.INPUT_DOWN;
+		inputManager.KeyState['S'] = inputManager.INPUT_DOWN;
 	}
 	//Move the camera to the right witht the d button
-	if (Input::KeyState['d'] == Input::INPUT_DOWN || Input::KeyState['d'] == Input::INPUT_DOWN_FIRST ||
-		Input::KeyState['D'] == Input::INPUT_DOWN || Input::KeyState['D'] == Input::INPUT_DOWN_FIRST)
+	if (inputManager.KeyState['d'] == inputManager.INPUT_DOWN || inputManager.KeyState['d'] == inputManager.INPUT_DOWN_FIRST ||
+		inputManager.KeyState['D'] == inputManager.INPUT_DOWN || inputManager.KeyState['D'] == inputManager.INPUT_DOWN_FIRST)
 	{
 		//move fractal to the left
 		Utils::leftBorder += horizDif;
 		Utils::rightBorder += horizDif;
 
 		//The key is has now been processed for a frame, so set it to the appropriate state
-		Input::KeyState['d'] = Input::INPUT_DOWN;
-		Input::KeyState['D'] = Input::INPUT_DOWN;
+		inputManager.KeyState['d'] = inputManager.INPUT_DOWN;
+		inputManager.KeyState['D'] = inputManager.INPUT_DOWN;
 	}
 	//Move the camera up with the space button
-	if (Input::KeyState[32] == Input::INPUT_DOWN || Input::KeyState[32] == Input::INPUT_DOWN_FIRST)
+	if (inputManager.KeyState[32] == inputManager.INPUT_DOWN || inputManager.KeyState[32] == inputManager.INPUT_DOWN_FIRST)
 	{
 		//Zoom out of fractal
 		Utils::leftBorder += horizDif;
@@ -388,10 +388,10 @@ void ProcessInput()
 		Utils::bottomBorder += vertDif;
 		
 		//The key is has now been processed for a frame, so set it to the appropriate state
-		Input::KeyState[32] = Input::INPUT_DOWN;
+		inputManager.KeyState[32] = inputManager.INPUT_DOWN;
 	}
 	//Move the camera down with the left shift button
-	if (Input::SpecialKeyState[GLUT_KEY_SHIFT_L] == Input::INPUT_DOWN || Input::SpecialKeyState[GLUT_KEY_SHIFT_L] == Input::INPUT_DOWN_FIRST)
+	if (inputManager.SpecialKeyState[GLUT_KEY_SHIFT_L] == inputManager.INPUT_DOWN || inputManager.SpecialKeyState[GLUT_KEY_SHIFT_L] == inputManager.INPUT_DOWN_FIRST)
 	{
 		//Zoom into fractal
 		Utils::leftBorder -= horizDif;
@@ -400,7 +400,7 @@ void ProcessInput()
 		Utils::bottomBorder -= vertDif;
 
 		//The key is has now been processed for a frame, so set it to the appropriate state
-		Input::SpecialKeyState[GLUT_KEY_SHIFT_L] = Input::INPUT_DOWN;
+		inputManager.SpecialKeyState[GLUT_KEY_SHIFT_L] = inputManager.INPUT_DOWN;
 	}
 }
 

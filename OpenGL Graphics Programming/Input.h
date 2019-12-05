@@ -1,5 +1,7 @@
 #pragma once
 #include "Debug.h"
+#include "InputManager.h"
+
 #include <freeglut.h>
 
 //Callback functions for glut input
