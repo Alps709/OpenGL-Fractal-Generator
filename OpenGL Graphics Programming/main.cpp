@@ -245,7 +245,8 @@ void calcMandelbrotOY(int _i, int _y)
 	//So that it can skip calculation of pixels if every pixel around the current one, has the same colour
 	for (int x = _i ^ (_y % 2); x < width; x += 2)
 	{
-		//Check if pixel is not on the outisde border
+		//Check if this is the second iteration and that this pixel is not on the outisde border 
+		//(if it's on the outside border then there aren't 4 surrounding pixels)
 		if (_i == 1 && _y > 0 && x > 0 && _y < height - 1 && x < width - 1)
 		{
 			//Will skip pixels of any colours

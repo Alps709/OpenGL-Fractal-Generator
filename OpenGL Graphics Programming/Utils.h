@@ -1,71 +1,47 @@
 #pragma once
-#include <cmath>
-#include <thread>
-#include "ThreadPool.h"
 
-namespace Utils
-{
-	//This provides an optimization by using a custom vec2 instead of std::complex
-	static bool useVec2 = true;
+#if !defined(__UTILS_H__)
+#define __UTILS_H__
 
-	//This provides an optimization by setting a pixels colour, based on the 4 orthogonally adjacent pixels each having the same colour,
-	//and thereby skipping the costly calculations needed to find the colour normally
-	static bool skipPixels = true;
+// Library Includes
+#include <WS2tcpip.h>
+#include <string>
+#include <strstream>
+#include <iostream>
 
-	static unsigned int maxIterations = 500;
-	static float currentIterationCount = 1;
+// Local Includes
+#include "glm.hpp"
 
-	static unsigned int threadNum = std::thread::hardware_concurrency();
-	
-	const static int SCREEN_WIDTH = 1280;
-	const static int SCREEN_HEIGHT = 720;
+// Types
 
-	static unsigned int skipNum = 0;
+// Constants
 
-	static long double leftBorder = -2.0, rightBorder = 1.0, topBorder = 1.20, bottomBorder = -1.2;
 
-	struct Pixel
+// Prototypes
+
+#define VALIDATE(a) if (!a) return (false)
+
+namespace {
+	std::string ToString(sockaddr_in _sockAddress)
 	{
-		unsigned char r;
-		unsigned char g;
-		unsigned char b;
-		unsigned char a;
+		//INET_ADDRSTRLEN - maximum length for IPv4 addresses
+		char _pcAddress[INET_ADDRSTRLEN];
+		inet_ntop(AF_INET, &_sockAddress.sin_addr, _pcAddress, INET_ADDRSTRLEN);
 
-		bool operator==(const Pixel &other) const
-		{
-			return (r == other.r
-				&& g == other.g
-				&& b == other.b
-				&& a == other.a);
-		}
-	};
+		std::string _strAddress = _pcAddress;
+		std::string _strPort = std::to_string(ntohs(_sockAddress.sin_port));
+		std::string _strAddressPort = _strAddress + ':' + _strPort;
 
-	//Array of pixels that is made into a texture
-	static Utils::Pixel pixelData[SCREEN_HEIGHT][SCREEN_WIDTH];
-
-	struct Vec2
-	{
-		//This vec2 will be treated as a complex number for the mandlebrot calculation
-		//Using a vec2 instead of std::complex increases performance considerably
-		double x = 0.0;
-		double y = 0.0;
-
-		Vec2(double a, double b)
-		{
-			x = a;
-			y = b;
-		}
-
-		Vec2 operator+(const Vec2 _other) const
-		{
-			return Vec2(x + _other.x, y + _other.y);
-		}
-
-		//Finds the absolute distance of the complex number from the origin
-		double absDist() const
-		{
-			//The magnitude of a complex vector is its distance from the origin in the imaginary plane
-			return sqrt(x * x + y * y);
-		}
-	};
+		return _strAddressPort;
+	}
 }
+
+template<typename T>
+std::string ToString(const T& _value)
+{
+	std::strstream theStream;
+	theStream << _value << std::ends;
+	return (theStream.str());
+}
+
+#endif    // __UTILS_H__
