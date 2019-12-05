@@ -28,7 +28,7 @@ using std::complex;
 
 void ProcessInput();
 void Update();
-void display();
+void Render();
 void SetGlobalGLSettings();
 void calcMandelbrotOY(int _i, int _y);
 float EaseInOut(float t, float b, float c, float d);
@@ -77,7 +77,7 @@ int main(int argc, char** argv)
 	glutSpecialUpFunc(::SpecialKeyBoardUp);
 
 	//Game loop functions
-	glutDisplayFunc(display);
+	glutDisplayFunc(Render);
 	glutIdleFunc(Update);
 	glutMainLoop();
 
@@ -97,7 +97,7 @@ void Update()
 	ProcessInput();
 }
 
-void display()
+void Render()
 {
 	//Calculate the mandlebrot this frame
 	std::vector<std::future<void>> myFutures;
