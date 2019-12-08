@@ -12,7 +12,15 @@
 #include "Texture.h"
 #include "clock.h"
 #include "Input.h"
+#include "TextLabel.h"
 #include <fstream>
+
+enum GameState
+{
+	MENU = 0,
+	CPUMODE = 1,
+	GPUMODE = 2
+};
 
 ThreadPool& threadPool = ThreadPool::GetInstance();
 
@@ -91,8 +99,7 @@ int main(int argc, char** argv)
 void Update()
 {
 	//Update game information
-	u_currentTime = static_cast<long long>(glutGet(GLUT_ELAPSED_TIME)); //Gets current time
-	u_currentTime = u_currentTime * static_cast<long long>(0.001); //Convert milliseconds to seconds
+	u_currentTime = static_cast<long long>(glutGet(GLUT_ELAPSED_TIME)) * static_cast<long long>(0.001); //Gets current time and convert it to milliseconds
 	glutPostRedisplay();
 	ProcessInput();
 }
