@@ -12,7 +12,7 @@ unsigned int UniformGetLocation(const std::string& _name);
 
 Shader::Shader()
 {
-	m_programID = ShaderLoader::CreateProgram("Shaders/DefaultVertexShader.shader", "Shaders/DefaultFragmentShader.shader");
+	m_programID = ShaderLoader::CreateProgram("Shaders/DefaultVS.glsl", "Shaders/DefaultFS.glsl");
 }
 
 Shader::Shader(const char* _vertexSrc, const char* _fragmentSrc)

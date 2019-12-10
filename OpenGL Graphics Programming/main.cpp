@@ -30,7 +30,8 @@ CClock myClock;
 long long u_currentTime = 0;
 
 Mesh* myFractalMesh = nullptr;
-Shader* myFractalShader = nullptr;
+Shader* myCPUFractalShader = nullptr;
+Shader* myGPUFractalShader = nullptr;
 
 using std::complex;
 
@@ -75,7 +76,8 @@ int main(int argc, char** argv)
 
 	myFractalMesh = new Mesh(Objects::vertices1, Objects::indices1);
 
-	myFractalShader = new Shader();
+	myCPUFractalShader = new Shader();
+	myGPUFractalShader = new Shader("Shaders/DeafultVS.glsl", "Shaders/GPUMandlebrotFS.glsl");
 
 	///Input function callbacks
 	//KeyBoard
@@ -92,7 +94,7 @@ int main(int argc, char** argv)
 	//Cleanup
 	threadPool.Stop();
 	delete myFractalMesh;
-	delete myFractalShader;
+	delete myCPUFractalShader;
 	return 0;
 }
 
@@ -171,11 +173,11 @@ void Render()
 
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	myFractalShader->Bind();
+	myCPUFractalShader->Bind();
 	
 	Texture myFractalTex = Texture(0, reinterpret_cast<unsigned char *>(Utils::pixelData));
 	myFractalTex.Bind();
-	myFractalShader->SetUniform1i("u_tex1", 0);
+	myCPUFractalShader->SetUniform1i("u_tex1", 0);
 
 	myFractalMesh->Bind();
 	glDrawElements(GL_TRIANGLES, myFractalMesh->GetindicesCount(), GL_UNSIGNED_INT, static_cast<void *>(0));
@@ -320,10 +322,15 @@ void calcMandelbrotOY(int _i, int _y)
 			//Set pixel colour based on number of iterations
 			//Z didn't escape and we didn't hit the max amount of iterations
 			//so this pixel isn't in the set
-			Utils::pixelData[_y][x].r = unsigned char(EaseInOut(100, 155, static_cast<float>(sin(iterations)) * 255, 255));
-			Utils::pixelData[_y][x].g = unsigned char(EaseInOut(100, 155, static_cast<float>(cos(iterations)) * 255, 255));
-			Utils::pixelData[_y][x].b = 255;
-			Utils::pixelData[_y][x].a = 255;
+
+			//Utils::pixelData[_y][x].r = unsigned char(EaseInOut(100, 155, static_cast<float>(sin(iterations)) * 255, 255));
+			//Utils::pixelData[_y][x].g = unsigned char(EaseInOut(100, 155, static_cast<float>(cos(iterations)) * 255, 255));
+			//Utils::pixelData[_y][x].b = 255;
+			//Utils::pixelData[_y][x].a = 255;
+
+			unsigned char tempRed = unsigned char(EaseInOut(100, 155, static_cast<float>(sin(iterations)) * 255, 255));
+			unsigned char tempGreen = unsigned char(EaseInOut(100, 155, static_cast<float>(cos(iterations)) * 255, 255));
+			Utils::pixelData[_y][x] = Utils::Pixel(tempRed, tempGreen, 255, 255);
 		}
 	}
 }
