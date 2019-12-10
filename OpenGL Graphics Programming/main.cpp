@@ -330,8 +330,9 @@ void calcMandelbrotOY(int _i, int _y)
 
 void ProcessInput()
 {
-	const long double horizDif = fabs(Utils::rightBorder - Utils::leftBorder) * 0.05;
-	const long double vertDif = fabs(Utils::topBorder - Utils::bottomBorder) * 0.05;
+	const float deltaTime = myClock.GetDeltaTick();
+	const long double horizDif = fabs(Utils::rightBorder - Utils::leftBorder) * 0.0005 * deltaTime;
+	const long double vertDif = fabs(Utils::topBorder - Utils::bottomBorder) * 0.0005 * deltaTime;
 	
 	//Keyboard input
 	//Move the camera forward with the w button
