@@ -22,6 +22,7 @@ GLuint ShaderLoader::CreateProgram(const char* vertexShaderFilename, const char*
 	if (shader != m_shaderMap->end() && shader->second == ID)
 	{
 		std::cout << "Shader has already been compiled before!" << std::endl;
+		system("pause");
 		return shader->first;
 	}
 
@@ -70,6 +71,7 @@ std::string ShaderLoader::ReadShaderFile(const char *filename)
 	// Ensure the file is open and readable
 	if (!file.good()) {
 		std::cout << "Cannot read file:  " << filename << std::endl;
+		system("pause");
 		return "";
 	}
 
@@ -98,4 +100,5 @@ void ShaderLoader::PrintErrorDetails(bool isShader, GLuint id, const char* name)
 	(isShader) ? GLCall(glGetShaderInfoLog(id, infoLogLength, nullptr, log)) : GLCall(glGetProgramInfoLog(id, infoLogLength, nullptr, log));
 	std::cout << "Error compiling " << ((isShader) ? "shader" : "program") << ": " << name << std::endl;
 	std::cout << log << std::endl;
+	system("pause");
 }

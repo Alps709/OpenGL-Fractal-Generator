@@ -13,6 +13,8 @@ public:
 	void Bind() const;
 	static void Unbind();
 
+	void SetUniform1d(const std::string& _name, double _v1) const;
+
 	void SetUniform1f(const std::string& _name, float _v1) const;
 	
 	void SetUniform1i(const std::string& _name, int _v1) const;

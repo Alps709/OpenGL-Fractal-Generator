@@ -22,6 +22,8 @@ enum GameState
 	GPUMODE = 2
 };
 
+GameState GAMESTATE = GPUMODE;
+
 ThreadPool& threadPool = ThreadPool::GetInstance();
 
 bool testFirstFrame = true;
@@ -77,7 +79,7 @@ int main(int argc, char** argv)
 	myFractalMesh = new Mesh(Objects::vertices1, Objects::indices1);
 
 	myCPUFractalShader = new Shader();
-	myGPUFractalShader = new Shader("Shaders/DeafultVS.glsl", "Shaders/GPUMandlebrotFS.glsl");
+	myGPUFractalShader = new Shader("Shaders/GPUMandlebrotVS.glsl", "Shaders/GPUMandlebrotFS.glsl");
 
 	///Input function callbacks
 	//KeyBoard
@@ -95,6 +97,7 @@ int main(int argc, char** argv)
 	threadPool.Stop();
 	delete myFractalMesh;
 	delete myCPUFractalShader;
+	delete myGPUFractalShader;
 	return 0;
 }
 
@@ -108,93 +111,140 @@ void Update()
 
 void Render()
 {
-	//Calculate the mandlebrot this frame
-	std::vector<std::future<void>> myFutures;
-
-	//Use maxIterations for the first test
-	if(testFirstFrame)
-		//Calculate full mandlebrot image at max iterations to test performance
+	if (GAMESTATE == CPUMODE)
 	{
-		//Start timer
-		myClock.Process();
+		//Calculate the mandlebrot this frame
+		std::vector<std::future<void>> myFutures;
 
-		//Do two passes on calculating the image data, this calculates the colour of every second pixel on the x axis, so the calculations are done in a checker board fashion
-		//(first i calculates the black squares of the checkerboard, second i iterates over the white squares), this allows for the pixel skipping optimization
-		for (int i = 0; i < 2; ++i)
+		//Use maxIterations for the first test
+		if (testFirstFrame)
+			//Calculate full mandlebrot image at max iterations to test performance
 		{
-			//Create a task to calculate each row of pixels for the texture
-			for (int y = 0; y < Utils::SCREEN_HEIGHT; y++)
+			//Start timer
+			myClock.Process();
+
+			//Do two passes on calculating the image data, this calculates the colour of every second pixel on the x axis, so the calculations are done in a checker board fashion
+			//(first i calculates the black squares of the checkerboard, second i iterates over the white squares), this allows for the pixel skipping optimization
+			for (int i = 0; i < 2; ++i)
 			{
-				myFutures.push_back(threadPool.Submit(calcMandelbrotOY, i, y));
+				//Create a task to calculate each row of pixels for the texture
+				for (int y = 0; y < Utils::SCREEN_HEIGHT; y++)
+				{
+					myFutures.push_back(threadPool.Submit(calcMandelbrotOY, i, y));
+				}
 			}
-		}
-		//Make sure the threads have finished with the mandlebrot calculation before sending the pixel data to the texture
-		for (auto& myFuture : myFutures)
-		{
-			myFuture.get();
-		}
-		myClock.Process();
-	}
-	else
-		//Have iterations increase over time for the awesome animated texture
-	{
-		//Start timer
-		myClock.Process();
-
-		//Do two passes on calculating the image data, this calculates the colour of every second pixel on the x axis, so the calculations are done in a checker board fashion
-		//(first i calculates the black squares of the checkerboard, second i iterates over the white squares), this allows for the pixel skipping optimization
-		for (int i = 0; i < 2; ++i)
-		{
-			////Create a task to calculate each row of pixels for the texture
-			for (int y = 0; y < Utils::SCREEN_HEIGHT; y++)
+			//Make sure the threads have finished with the mandlebrot calculation before sending the pixel data to the texture
+			for (auto& myFuture : myFutures)
 			{
-				myFutures.push_back(threadPool.Submit(calcMandelbrotOY, i, y));
+				myFuture.get();
 			}
+			myClock.Process();
 		}
-
-		//Increase the iterations every 5 frames so it gives a cool animation
-		if (Utils::currentIterationCount <= Utils::maxIterations)
+		else
+			//Have iterations increase over time for the awesome animated texture
 		{
-			Utils::currentIterationCount += 0.2f;
+			//Start timer
+			myClock.Process();
+
+			//Do two passes on calculating the image data, this calculates the colour of every second pixel on the x axis, so the calculations are done in a checker board fashion
+			//(first i calculates the black squares of the checkerboard, second i iterates over the white squares), this allows for the pixel skipping optimization
+			for (int i = 0; i < 2; ++i)
+			{
+				////Create a task to calculate each row of pixels for the texture
+				for (int y = 0; y < Utils::SCREEN_HEIGHT; y++)
+				{
+					myFutures.push_back(threadPool.Submit(calcMandelbrotOY, i, y));
+				}
+			}
+
+			//Make sure the threads have finished with the mandlebrot calculation before sending the pixel data to the texture
+			for (auto& myFuture : myFutures)
+			{
+				myFuture.get();
+			}
+
+			//End timer
+			myClock.Process();
 		}
 
-		//Make sure the threads have finished with the mandlebrot calculation before sending the pixel data to the texture
-		for (auto& myFuture : myFutures)
+		system("cls");
+		std::cout << "FPS: " << 1000.0f / myClock.GetDeltaTick();
+
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		myCPUFractalShader->Bind();
+
+		Texture myFractalTex = Texture(0, reinterpret_cast<unsigned char *>(Utils::pixelData));
+		myFractalTex.Bind();
+		myCPUFractalShader->SetUniform1i("u_tex1", 0);
+
+		myFractalMesh->Bind();
+		glDrawElements(GL_TRIANGLES, myFractalMesh->GetindicesCount(), GL_UNSIGNED_INT, static_cast<void *>(0));
+
+		Mesh::Unbind();
+		Texture::Unbind();
+		Shader::Unbind();
+
+		glutSwapBuffers();
+
+		if (testFirstFrame)
 		{
-			myFuture.get();
+			std::cout << "\nIt took " << myClock.GetDeltaTick()
+				<< " milliseconds to calculate the full mandlebrot fractal with "
+				<< Utils::maxIterations << " iterations.\n";
+			system("pause");
+			testFirstFrame = false;
 		}
+	}
+	else if (GAMESTATE == GPUMODE)
+	{
+		//GPU is enabled
 
-		//End timer
 		myClock.Process();
+
+		system("cls");
+		std::cout << "FPS: " << 1000.0f / myClock.GetDeltaTick();
+
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		myGPUFractalShader->Bind();
+
+		//Pass all the uniforms to the shader
+		//uniform float u_leftBorder;
+		myGPUFractalShader->SetUniform1d("u_leftBorder", Utils::leftBorder);
+
+		//uniform float u_rightBorder;
+		myGPUFractalShader->SetUniform1d("u_rightBorder", Utils::rightBorder);
+
+		//uniform float u_topBorder;
+		myGPUFractalShader->SetUniform1d("u_topBorder", Utils::topBorder);
+
+		//uniform float u_bottomBorder;
+		myGPUFractalShader->SetUniform1d("u_bottomBorder", Utils::bottomBorder);
+
+		//uniform float u_width;
+		myGPUFractalShader->SetUniform1f("u_width", (float)Utils::SCREEN_WIDTH);
+
+		//uniform float u_height;
+		myGPUFractalShader->SetUniform1f("u_height", (float)Utils::SCREEN_HEIGHT);
+
+		//uniform int u_currentIterations;
+		myGPUFractalShader->SetUniform1i("u_currentIterations", (int)Utils::currentIterationCount);
+
+		myFractalMesh->Bind();
+		glDrawElements(GL_TRIANGLES, myFractalMesh->GetindicesCount(), GL_UNSIGNED_INT, static_cast<void *>(0));
+
+		Mesh::Unbind();
+		Texture::Unbind();
+		Shader::Unbind();
+
+		glutSwapBuffers();
 	}
 
-	system("cls");
-	std::cout << "FPS: " << 1000.0f / myClock.GetDeltaTick();
-
-	glClear(GL_COLOR_BUFFER_BIT);
-
-	myCPUFractalShader->Bind();
-	
-	Texture myFractalTex = Texture(0, reinterpret_cast<unsigned char *>(Utils::pixelData));
-	myFractalTex.Bind();
-	myCPUFractalShader->SetUniform1i("u_tex1", 0);
-
-	myFractalMesh->Bind();
-	glDrawElements(GL_TRIANGLES, myFractalMesh->GetindicesCount(), GL_UNSIGNED_INT, static_cast<void *>(0));
-
-	Mesh::Unbind();
-	Texture::Unbind();
-	Shader::Unbind();
-
-	glutSwapBuffers();
-
-	if(testFirstFrame)
+	//Increase the iterations every 5 frames so it gives a cool animation
+	if (Utils::currentIterationCount <= Utils::maxIterations)
 	{
-		std::cout << "\nIt took " << myClock.GetDeltaTick()
-				  << " milliseconds to calculate the full mandlebrot fractal with "
-				  << Utils::maxIterations << " iterations.\n";
-		system("pause");
-		testFirstFrame = false;
+		Utils::currentIterationCount += 0.2f;
 	}
 }
 
@@ -346,9 +396,18 @@ void ProcessInput()
 	if (inputManager.KeyState['w'] == inputManager.INPUT_DOWN || inputManager.KeyState['w'] == inputManager.INPUT_DOWN_FIRST ||
 		inputManager.KeyState['W'] == inputManager.INPUT_DOWN || inputManager.KeyState['W'] == inputManager.INPUT_DOWN_FIRST)
 	{
-		//move fractal down
-		Utils::topBorder += vertDif;
-		Utils::bottomBorder += vertDif;
+		if (GAMESTATE == CPUMODE)
+		{
+			//move fractal down
+			Utils::topBorder += vertDif;
+			Utils::bottomBorder += vertDif;
+		}
+		else if (GAMESTATE == GPUMODE)
+		{
+			//move fractal down (inverse for GPU as screen coords for the fragment shader go from bottom to top)
+			Utils::topBorder -= vertDif;
+			Utils::bottomBorder -= vertDif;
+		}
 
 		//Print camera position for debugging
 		//std::cout << "Camera pos: x: " << myCamera->GetPosition().x << " y: " << myCamera->GetPosition().y << " z: " << myCamera->GetPosition().z  << std::endl;
@@ -373,9 +432,18 @@ void ProcessInput()
 	if (inputManager.KeyState['s'] == inputManager.INPUT_DOWN || inputManager.KeyState['s'] == inputManager.INPUT_DOWN_FIRST ||
 		inputManager.KeyState['S'] == inputManager.INPUT_DOWN || inputManager.KeyState['S'] == inputManager.INPUT_DOWN_FIRST)
 	{
-		//move fractal up
-		Utils::topBorder -= vertDif;
-		Utils::bottomBorder -= vertDif;
+		if (GAMESTATE == CPUMODE)
+		{
+			//move fractal up
+			Utils::topBorder -= vertDif;
+			Utils::bottomBorder -= vertDif;
+		}
+		else if (GAMESTATE == GPUMODE)
+		{
+			//move fractal up (inverse for GPU as screen coords for the fragment shader go from bottom to top)
+			Utils::topBorder += vertDif;
+			Utils::bottomBorder += vertDif;
+		}
 
 		//The key is has now been processed for a frame, so set it to the appropriate state
 		inputManager.KeyState['s'] = inputManager.INPUT_DOWN;

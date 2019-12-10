@@ -30,6 +30,11 @@ void Shader::Unbind()
 	GLCall(glUseProgram(0));
 }
 
+void Shader::SetUniform1d(const std::string& _name, double _v1) const
+{
+	GLCall(glUniform1d(GetUniformLocation(_name), _v1));
+}
+
 void Shader::SetUniform1f(const std::string& _name, float _v1) const
 {
 	GLCall(glUniform1f(GetUniformLocation(_name), _v1));
