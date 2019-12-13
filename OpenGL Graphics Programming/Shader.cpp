@@ -5,9 +5,6 @@
 #include <freeglut.h>
 #include <mat4x4.hpp>
 
-
-
-
 unsigned int UniformGetLocation(const std::string& _name);
 
 Shader::Shader()

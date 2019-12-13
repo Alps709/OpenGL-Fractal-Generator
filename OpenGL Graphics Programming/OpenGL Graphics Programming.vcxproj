@@ -70,20 +70,20 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LibraryPath>$(ProjectDir)Dependencies\fmod;$(ProjectDir)Dependencies\freeglut;$(ProjectDir)Dependencies\soil;$(ProjectDir)Dependencies\glew;$(ProjectDir)Dependencies\vld;$(ProjectDir)Dependencies\glm;$(ProjectDir)Dependencies;$(ProjectDir)Dependencies\freetype;$(LibraryPath)</LibraryPath>
-    <IncludePath>$(ProjectDir)Dependencies\vld;$(ProjectDir)Dependencies\glew;$(ProjectDir)Dependencies\freeglut;$(ProjectDir)Dependencies\soil;$(ProjectDir)Dependencies\glm;$(ProjectDir)Dependencies;$(ProjectDir)Dependencies\fmod;$(ProjectDir)Dependencies\freetype;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)Dependencies\fmod;$(ProjectDir)Dependencies\freeglut\lib;$(ProjectDir)Dependencies\glew\lib\Release\Win32;$(ProjectDir)Dependencies\vld;$(ProjectDir)Dependencies\glm;$(ProjectDir)Dependencies;$(ProjectDir)Dependencies\freetype\win32;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)Dependencies\vld;$(ProjectDir)Dependencies\glew\include\GL;$(ProjectDir)Dependencies\freeglut\include\GL;$(ProjectDir)Dependencies\glm;$(ProjectDir)Dependencies;$(ProjectDir)Dependencies\fmod;$(ProjectDir)Dependencies\freetype\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LibraryPath>$(ProjectDir)Dependencies\fmod;$(ProjectDir)Dependencies\freeglut;$(ProjectDir)Dependencies\soil;$(ProjectDir)Dependencies\glew;$(ProjectDir)Dependencies\vld;$(ProjectDir)Dependencies\glm;$(ProjectDir)Dependencies;$(ProjectDir)Dependencies\freetype;$(LibraryPath)</LibraryPath>
-    <IncludePath>$(ProjectDir)Dependencies\vld;$(ProjectDir)Dependencies\glew;$(ProjectDir)Dependencies\freeglut;$(ProjectDir)Dependencies\soil;$(ProjectDir)Dependencies\glm;$(ProjectDir)Dependencies;$(ProjectDir)Dependencies\fmod;$(ProjectDir)Dependencies\freetype;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)Dependencies\fmod;$(ProjectDir)Dependencies\freeglut\lib;$(ProjectDir)Dependencies\glew\lib\Release\Win32;$(ProjectDir)Dependencies\vld;$(ProjectDir)Dependencies\glm;$(ProjectDir)Dependencies;$(ProjectDir)Dependencies\freetype\win32;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)Dependencies\vld;$(ProjectDir)Dependencies\glew\include\GL;$(ProjectDir)Dependencies\freeglut\include\GL;$(ProjectDir)Dependencies\glm;$(ProjectDir)Dependencies;$(ProjectDir)Dependencies\fmod;$(ProjectDir)Dependencies\freetype\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LibraryPath>$(ProjectDir)Dependencies\glm;$(ProjectDir)Dependencies/glew;$(ProjectDir)Dependencies/freeglut;$(LibraryPath)</LibraryPath>
-    <IncludePath>$(ProjectDir)Dependencies\glm;$(ProjectDir)Dependencies\glew;$(ProjectDir)Dependencies\freeglut;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)Dependencies\vld;$(ProjectDir)Dependencies\glew\lib\Release\x64;$(ProjectDir)Dependencies\freetype\win64;$(ProjectDir)Dependencies\freeglut\lib\x64;$(ProjectDir)Dependencies\fmod;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)Dependencies\vld;$(ProjectDir)Dependencies\glm;$(ProjectDir)Dependencies\glew\include\GL;$(ProjectDir)Dependencies\freetype\include;$(ProjectDir)Dependencies\freeglut\include\GL;$(ProjectDir)Dependencies\fmod;$(ProjectDir)Dependencies;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LibraryPath>$(ProjectDir)Dependencies\glm;$(ProjectDir)Dependencies/glew;$(ProjectDir)Dependencies/freeglut;$(LibraryPath)</LibraryPath>
-    <IncludePath>$(ProjectDir)Dependencies\glew;$(ProjectDir)Dependencies\freeglut;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)Dependencies\vld;$(ProjectDir)Dependencies\glew\lib\Release\x64;$(ProjectDir)Dependencies\freetype\win64;$(ProjectDir)Dependencies\freeglut\lib\x64;$(ProjectDir)Dependencies\fmod;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)Dependencies\vld;$(ProjectDir)Dependencies\glm;$(ProjectDir)Dependencies\glew\include\GL;$(ProjectDir)Dependencies\freetype\include;$(ProjectDir)Dependencies\freeglut\include\GL;$(ProjectDir)Dependencies\fmod;$(ProjectDir)Dependencies;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -94,7 +94,7 @@
       <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>opengl32.lib;freeglut.lib;glew32.lib;SOIL.lib;fmod_vc.lib;freetype.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;freeglut.lib;glew32.lib;fmod_vc.lib;freetype.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>
       </AdditionalOptions>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
@@ -106,9 +106,12 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>opengl32.lib;freeglut.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fmod64_vc.lib;freeglut.lib;freetype.lib;glew32.lib;vld.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -124,7 +127,7 @@
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>opengl32.lib;freeglut.lib;glew32.lib;SOIL.lib;fmod_vc.lib;freetype.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;freeglut.lib;glew32.lib;fmod_vc.lib;freetype.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>
       </AdditionalOptions>
     </Link>
@@ -137,11 +140,14 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>opengl32.lib;freeglut.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fmod64_vc.lib;freeglut.lib;freetype.lib;glew32.lib;vld.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

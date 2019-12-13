@@ -211,16 +211,16 @@ void Render()
 
 		//Pass all the uniforms to the shader
 		//uniform float u_leftBorder;
-		myGPUFractalShader->SetUniform1d("u_leftBorder", Utils::leftBorder);
+		myGPUFractalShader->SetUniform1f("u_leftBorder", Utils::leftBorder);
 
 		//uniform float u_rightBorder;
-		myGPUFractalShader->SetUniform1d("u_rightBorder", Utils::rightBorder);
+		myGPUFractalShader->SetUniform1f("u_rightBorder", Utils::rightBorder);
 
 		//uniform float u_topBorder;
-		myGPUFractalShader->SetUniform1d("u_topBorder", Utils::topBorder);
+		myGPUFractalShader->SetUniform1f("u_topBorder", Utils::topBorder);
 
 		//uniform float u_bottomBorder;
-		myGPUFractalShader->SetUniform1d("u_bottomBorder", Utils::bottomBorder);
+		myGPUFractalShader->SetUniform1f("u_bottomBorder", Utils::bottomBorder);
 
 		//uniform float u_width;
 		myGPUFractalShader->SetUniform1f("u_width", (float)Utils::SCREEN_WIDTH);
