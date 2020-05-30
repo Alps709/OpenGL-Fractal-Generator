@@ -72,7 +72,7 @@ void ThreadPool::DoWork()
 		if (m_unqpWorkQueue->blocking_pop(WorkItem, 500))
 		{
 			WorkItem->execute();
-			m_aiItemsProcessed++;
+			++m_aiItemsProcessed;
 		}
 		else {
 			continue;
